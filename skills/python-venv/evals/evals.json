@@ -1,0 +1,23 @@
+{
+  "skill_name": "python-venv",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "pip install pandas",
+      "expected_output": "Claude should check for existing venv, create .venv if needed, then run .venv/bin/pip install pandas. Should never run bare 'pip install pandas' against system Python.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "幫我跑 ~/projects/data-analysis/main.py",
+      "expected_output": "Claude should check for venv in ~/projects/data-analysis/, create one if needed, then run the script using .venv/bin/python main.py. Should report venv status to user.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我有一個新的 Python 專案在 /tmp/test-proj，裡面有 requirements.txt，幫我設定環境並安裝依賴",
+      "expected_output": "Claude should create .venv in /tmp/test-proj, then install requirements.txt using .venv/bin/pip install -r requirements.txt. Should report what was created and installed.",
+      "files": []
+    }
+  ]
+}
