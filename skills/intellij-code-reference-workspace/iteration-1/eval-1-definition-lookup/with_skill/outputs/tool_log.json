@@ -1,0 +1,11 @@
+{
+  "tools_used": [
+    "Read(SKILL.md)",
+    "ToolSearch(select:mcp__idea__*)",
+    "mcp__idea__get_project_modules",
+    "Bash(global -x OrderRuleService)",
+    "Read(OrderRuleService.java)"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Followed the skill's decision flow: probed MCP (available), but since this was a plain name->file:line definition lookup I reached for gtags (global -x) first per the flow and got an immediate hit, avoiding an MCP round-trip."
+}

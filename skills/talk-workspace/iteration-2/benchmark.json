@@ -1,0 +1,198 @@
+{
+  "s1-old": {
+    "scenario_id": "1",
+    "skill_version": "old",
+    "approach": "Dispatch the review prompt to pane %42 via `talk send`, poll `talk ping` in a backgrounded until-loop so the foreground stays free, then capture the worker's final output with `talk read` once idle.",
+    "total_input_bytes": 247,
+    "total_output_bytes": 4232,
+    "total_context_bytes": 4479,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "talk send %42 \"Review /home/fenrir/code/coinsasia/backend/backend-api-golang/internal/exchangeapi/auth/handlers.go and list the top 3 security risks. 3 short bullets is enough.\"",
+        "input_bytes": 177,
+        "output_bytes": 30,
+        "total": 207,
+        "note": "send: tool_result is empty/minimal"
+      },
+      {
+        "step": 2,
+        "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 3; done",
+        "input_bytes": 53,
+        "output_bytes": 120,
+        "total": 173,
+        "note": "background poll \u2014 notification only"
+      },
+      {
+        "step": 3,
+        "cmd": "talk read %42 200",
+        "input_bytes": 17,
+        "output_bytes": 4082,
+        "total": 4099,
+        "note": "read last 200 lines"
+      }
+    ]
+  },
+  "s1-new": {
+    "scenario_id": "1",
+    "skill_version": "new",
+    "approach": "Dispatch via talk send asking the worker to write the final 3-risk summary to a file outside scrollback, background-poll with talk ping until idle, then Read the file exactly \u2014 avoiding pulling spinner/chain-of-thought noise into driver context.",
+    "total_input_bytes": 382,
+    "total_output_bytes": 796,
+    "total_context_bytes": 1178,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "talk send %42 \"Review /home/fenrir/code/coinsasia/backend/backend-api-golang/internal/exchangeapi/auth/handlers.go and list the top 3 security risks. 3 short bullets is enough. When done, write ONLY the final 3 bullets (no working, no chain-of-thought) to /tmp/scenario-1-risks.md and then say done.\"",
+        "input_bytes": 300,
+        "output_bytes": 30,
+        "total": 330,
+        "note": "send: tool_result is empty/minimal"
+      },
+      {
+        "step": 2,
+        "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 3; done",
+        "input_bytes": 53,
+        "output_bytes": 120,
+        "total": 173,
+        "note": "background poll \u2014 notification only"
+      },
+      {
+        "step": 3,
+        "cmd": "Read /tmp/scenario-1-risks.md",
+        "input_bytes": 29,
+        "output_bytes": 646,
+        "total": 675,
+        "note": "Read \u2192 handoff fixture (646 B)"
+      }
+    ]
+  },
+  "s2-old": {
+    "scenario_id": "2",
+    "skill_version": "old",
+    "approach": "Dispatch the task with talk send, then run a background ping-poll loop so the driver's foreground stays free; once the loop exits (worker idle), capture the tail with talk read \u2014 large enough to catch the <<<RESULT ... RESULT>>> block at the end of ~100 lines of per-package output.",
+    "total_input_bytes": 295,
+    "total_output_bytes": 4842,
+    "total_context_bytes": 5137,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "talk send %42 \"Run the full integration test suite (go test ./...) against the current wallet service implementation and identify any regressions. For each regression, give test name, failure mode, and suspected root cause.\"",
+        "input_bytes": 224,
+        "output_bytes": 30,
+        "total": 254,
+        "note": "send: tool_result is empty/minimal"
+      },
+      {
+        "step": 2,
+        "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 15; done",
+        "input_bytes": 54,
+        "output_bytes": 120,
+        "total": 174,
+        "note": "background poll \u2014 notification only"
+      },
+      {
+        "step": 3,
+        "cmd": "talk read %42 200",
+        "input_bytes": 17,
+        "output_bytes": 4692,
+        "total": 4709,
+        "note": "read last 200 lines"
+      }
+    ]
+  },
+  "s2-new": {
+    "scenario_id": "2",
+    "skill_version": "new",
+    "approach": "Dispatch the task with an explicit file-handoff instruction (worker writes the regression report to /tmp/scenario-2-regressions.md), then background a ping-only poll loop so the driver stays unblocked, and finally Read the small handoff file \u2014 keeping ~5 minutes of spinner/per-package scrollback out of the driver's context.",
+    "total_input_bytes": 522,
+    "total_output_bytes": 899,
+    "total_context_bytes": 1421,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "talk send %42 \"Please run the full integration test suite (go test ./...) against the current wallet service implementation and identify any regressions. For each regression give: test name, failure mode, suspected root cause. When done, write the final regression report ONLY (no per-package logs, no spinners) to /tmp/scenario-2-regressions.md and then stop. If zero regressions, write a single line 'no regressions' to that file.\"",
+        "input_bytes": 433,
+        "output_bytes": 30,
+        "total": 463,
+        "note": "send: tool_result is empty/minimal"
+      },
+      {
+        "step": 2,
+        "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 10; done",
+        "input_bytes": 54,
+        "output_bytes": 120,
+        "total": 174,
+        "note": "background poll \u2014 notification only"
+      },
+      {
+        "step": 3,
+        "cmd": "Read /tmp/scenario-2-regressions.md",
+        "input_bytes": 35,
+        "output_bytes": 749,
+        "total": 784,
+        "note": "Read \u2192 handoff fixture (749 B)"
+      }
+    ]
+  },
+  "s3-old": {
+    "scenario_id": "3",
+    "skill_version": "old",
+    "approach": "Since the driver and worker share the same worktree and the worker already committed a1b2c3d on the current HEAD, read the diff directly with `git show` locally instead of asking the worker to paste it \u2014 scrollback doesn't contain the diff. Then glance at the tail of the worker's pane to confirm the test-pass lines, and finally tell the worker to hold off on pushing while review happens.",
+    "total_input_bytes": 148,
+    "total_output_bytes": 4176,
+    "total_context_bytes": 4324,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "git show a1b2c3d",
+        "input_bytes": 16,
+        "output_bytes": 2429,
+        "total": 2445,
+        "note": "git show \u2192 2429 B"
+      },
+      {
+        "step": 2,
+        "cmd": "talk read %42 60",
+        "input_bytes": 16,
+        "output_bytes": 1717,
+        "total": 1733,
+        "note": "read last 60 lines"
+      },
+      {
+        "step": 3,
+        "cmd": "talk send %42 \"Hold off on pushing \u2014 reviewing the diff now. I'll come back with feedback or a green-light shortly.\"",
+        "input_bytes": 116,
+        "output_bytes": 30,
+        "total": 146,
+        "note": "send: tool_result is empty/minimal"
+      }
+    ]
+  },
+  "s3-new": {
+    "scenario_id": "3",
+    "skill_version": "new",
+    "approach": "Shared-worktree: skip scrollback (no diff there) and use the commit hash worker already shared as the checkpoint \u2014 run `git show a1b2c3d` locally to see the exact diff, then after review send a decision back via `talk send`.",
+    "total_input_bytes": 144,
+    "total_output_bytes": 2459,
+    "total_context_bytes": 2603,
+    "commands": [
+      {
+        "step": 1,
+        "cmd": "git show a1b2c3d",
+        "input_bytes": 16,
+        "output_bytes": 2429,
+        "total": 2445,
+        "note": "git show \u2192 2429 B"
+      },
+      {
+        "step": 2,
+        "cmd": "talk send %42 \"Reviewed a1b2c3d \u2014 looks good, tests green on both branches. Hold off on push; I'll confirm after one more look.\"",
+        "input_bytes": 128,
+        "output_bytes": 30,
+        "total": 158,
+        "note": "send: tool_result is empty/minimal"
+      }
+    ]
+  }
+}

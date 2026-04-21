@@ -1,0 +1,26 @@
+{
+  "scenario_id": "2",
+  "skill_version": "new",
+  "approach": "Dispatch the task with an explicit file-handoff instruction (worker writes the regression report to /tmp/scenario-2-regressions.md), then background a ping-only poll loop so the driver stays unblocked, and finally Read the small handoff file — keeping ~5 minutes of spinner/per-package scrollback out of the driver's context.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "talk send %42 \"Please run the full integration test suite (go test ./...) against the current wallet service implementation and identify any regressions. For each regression give: test name, failure mode, suspected root cause. When done, write the final regression report ONLY (no per-package logs, no spinners) to /tmp/scenario-2-regressions.md and then stop. If zero regressions, write a single line 'no regressions' to that file.\"",
+      "purpose": "Dispatch the task and pin the handoff contract up front — worker writes conclusion-only to a file so driver never has to ingest the 5-minute streaming per-package scrollback.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 10; done",
+      "purpose": "Wait for worker to go idle without blocking the driver's foreground. ping inspects only the pane title (tens of bytes, not captured into context). 10s cadence is fine for a ~5min task — avoids busy-polling without meaningfully delaying the completion signal.",
+      "run_in_background": true
+    },
+    {
+      "step": 3,
+      "cmd": "Read /tmp/scenario-2-regressions.md",
+      "purpose": "Pull the worker's conclusion into driver context once, from a clean file — no ANSI escapes, no spinner frames, no per-package pass lines. ~11 lines vs ~116 lines of raw scrollback.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "Two goals drive the design: (a) don't block the driver's foreground while the worker takes ~5 minutes, and (b) don't pull the long streaming scrollback into driver context. Backgrounding a ping-only poll loop (step 2) addresses (a) — the loop exits the moment the worker goes idle and the runtime notifies the driver, so the user can have other conversations meanwhile. File handoff (step 1's instruction + step 3's Read) addresses (b) — per the skill's top-ranked optimization, replacing terminal scrollback with a file cuts incremental token cost dramatically and sidesteps the spinner/ANSI noise visible in the scenario-2-scrollback fixture. Alternatives considered: (i) 'talk read %42 800 | awk <<<RESULT>>>' — works, but still sends the marker-framed block through Bash tool output and relies on scrollback not being truncated past tmux's ~2000-line limit after a 5-minute run; file handoff is more robust. (ii) polling with 'talk read' each iteration — explicitly warned against by the skill (accumulates redundant scrollback into driver context on every iteration). (iii) 'talk tail' — forbidden, it's a blocking TUI that would hang the Bash tool."
+}

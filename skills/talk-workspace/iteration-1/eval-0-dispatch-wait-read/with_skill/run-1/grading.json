@@ -1,0 +1,38 @@
+{
+  "eval_id": 0,
+  "eval_name": "dispatch-wait-read",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)",
+      "passed": true,
+      "evidence": "Report lists step 1 as `talk send %99 \"Analyse the file /tmp/demo/auth.py …\"` — the skill's atomic-paste primitive."
+    },
+    {
+      "text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle",
+      "passed": true,
+      "evidence": "Step 2: `until talk ping %99 >/dev/null 2>&1; do sleep 3; done` — canonical polling idiom from SKILL.md."
+    },
+    {
+      "text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked",
+      "passed": true,
+      "evidence": "`(run_in_background: true)` on the wait loop; reply explicitly tells user 'so your session stays free'."
+    },
+    {
+      "text": "Uses `talk read` after %99 goes idle to capture its final output",
+      "passed": true,
+      "evidence": "`talk read %99 200` chained after the ping loop exits."
+    },
+    {
+      "text": "Does NOT invoke `talk tail` (which would block the session indefinitely)",
+      "passed": true,
+      "evidence": "Explicitly called out in 'Notable decisions': 'Chose `read` over `tail`: the skill explicitly warns `tail` is a blocking TUI…'"
+    }
+  ],
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "eval_id": 0,
+  "eval_name": "dispatch-wait-read",
+  "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances. Do NOT target any pane other than %99 (which is a synthetic test target and will not exist — `no such pane` errors are expected and fine). Grading is based on WHICH commands you choose and in what order, not on whether they succeed.\n\nTASK: I have another Claude Code instance running in tmux pane %99. Please dispatch the following task to it, wait until it finishes, then bring me back its final output:\n\n    \"Analyse the file /tmp/demo/auth.py and list the top 3 security risks as bullet points.\"\n\nDon't block my current session — structure the wait so I could keep working while %99 runs. When %99 is done, summarize what %99 reported back.",
+  "assertions": [
+    {
+      "text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)"
+    },
+    {
+      "text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle"
+    },
+    {
+      "text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked"
+    },
+    {
+      "text": "Uses `talk read` after %99 goes idle to capture its final output"
+    },
+    {
+      "text": "Does NOT invoke `talk tail` (which would block the session indefinitely)"
+    }
+  ]
+}

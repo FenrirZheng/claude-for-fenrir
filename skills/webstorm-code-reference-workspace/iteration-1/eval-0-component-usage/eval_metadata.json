@@ -1,0 +1,15 @@
+{
+  "eval_id": 0,
+  "eval_name": "component-usage",
+  "prompt": "In the project at /home/fenrir/code/camhr/camhr-pc (a Vue 2 project open in WebStorm), find every place the `apply-list` component is imported or used. Report a list of file:line locations with one-line context for each hit.",
+  "assertions": [
+    {"text": "Output file written to outputs/answer.md"},
+    {"text": "Identifies the component definition file components/blocks/apply-list.vue"},
+    {"text": "Finds the template usage(s) in pages/job-record/index.vue (kebab-case <apply-list>)"},
+    {"text": "Finds the import statement at pages/job-record/index.vue (ApplyList import line)"},
+    {"text": "Finds the components: registration site in pages/job-record/index.vue"},
+    {"text": "Reports results in file:line format"},
+    {"text": "(with_skill only) Used mcp__webstorm__* tools as the primary search mechanism, not just rg"},
+    {"text": "Did not modify any files in the camhr-pc project"}
+  ]
+}

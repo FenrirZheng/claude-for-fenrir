@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "i18n-key-lookup",
+  "prompt": "Pick one i18n `login`-containing key and find every reference in Vue/JS files.",
+  "assertions": [
+    {"text": "Output file written to outputs/answer.md"},
+    {"text": "Named a specific i18n key containing 'login' and cited its locale file"},
+    {"text": "Found at least one call-site referencing that key (e.g. $t('...'))"},
+    {"text": "Reports results in file:line format"},
+    {"text": "(with_skill only) Used mcp__webstorm__search_in_files_by_text as the skill specifically recommends for i18n/config string keys, or explained MCP fallback"},
+    {"text": "Did not modify any files"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Correct file:line for OrderRuleService",
+      "passed": true,
+      "evidence": "OrderRuleService.java:26 (matches actual @Component class)"
+    },
+    {
+      "text": "Tried gtags (global) before MCP for plain definition",
+      "passed": true,
+      "evidence": "tool_log shows global -x as first lookup tool after MCP probe; skill flow honored"
+    },
+    {
+      "text": "Probed MCP availability before relying on it",
+      "passed": true,
+      "evidence": "mcp__idea__get_project_modules called first"
+    },
+    {
+      "text": "Did not over-thrash (kept under 10 tool calls)",
+      "passed": true,
+      "evidence": "9 tool uses total"
+    }
+  ]
+}

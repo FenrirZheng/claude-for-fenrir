@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Found @Bean registration at OrderAuditAutoConfiguration.java:12 or :13",
+      "passed": true,
+      "evidence": "Reported :12 (correct)"
+    },
+    {
+      "text": "Found the strategy registry pattern (AuditStrategyDispatch)",
+      "passed": true,
+      "evidence": "Reported AuditStrategyDispatch.java:30-32, :84, :89"
+    },
+    {
+      "text": "Did NOT falsely conclude the bean doesn't exist",
+      "passed": true,
+      "evidence": "Comprehensive accurate answer"
+    },
+    {
+      "text": "Used MCP search_in_files_by_text instead of rg",
+      "passed": true,
+      "evidence": "MCP-based throughout"
+    }
+  ]
+}

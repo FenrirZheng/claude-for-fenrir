@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "find-and-message",
+  "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances running real work. You MUST NOT send any message (with `talk send` or `talk type`) to any pane other than %99. %99 is a synthetic target and will not exist — that's fine. You may freely RUN `talk list` to demonstrate discovery; just don't send to anything real.\n\nTASK: Imagine I've lost track of which pane my other Claude is in. Walk through how you'd discover it across my tmux sessions, then send it the message \"please pause what you're doing and switch to branch review-fixes\". For THIS test, treat %99 as the target you eventually picked — fire the send at %99 only. Confirm which pane you targeted.",
+  "assertions": [
+    {"text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates"},
+    {"text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk"},
+    {"text": "Uses `talk send` (atomic buffer paste) to deliver the message — avoids raw `tmux send-keys` which trips on quoting"},
+    {"text": "Targets only %99 in the send command — does not send to any real pane"},
+    {"text": "Final reply confirms the target pane id (%99)"}
+  ]
+}

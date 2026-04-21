@@ -1,0 +1,26 @@
+{
+  "scenario_id": "3",
+  "skill_version": "old",
+  "approach": "Since the driver and worker share the same worktree and the worker already committed a1b2c3d on the current HEAD, read the diff directly with `git show` locally instead of asking the worker to paste it — scrollback doesn't contain the diff. Then glance at the tail of the worker's pane to confirm the test-pass lines, and finally tell the worker to hold off on pushing while review happens.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "git show a1b2c3d",
+      "purpose": "The worktree is shared and HEAD already points at the worker's commit, so the driver can inspect the actual diff locally — faster and more reliable than round-tripping through the worker's pane, and the scrollback doesn't contain the diff anyway.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "talk read %42 60",
+      "purpose": "Capture the last ~60 lines of the worker's scrollback to confirm the test-pass markers (69/69 auth tests, 881/881 full suite) and the exact commit hash/message the worker claims — cheap sanity check that the diff just reviewed matches what the worker reported.",
+      "run_in_background": false
+    },
+    {
+      "step": 3,
+      "cmd": "talk send %42 \"Hold off on pushing — reviewing the diff now. I'll come back with feedback or a green-light shortly.\"",
+      "purpose": "Worker explicitly asked 'push or review first?' — send an immediate ack telling it to stay put so it doesn't idle-push or context-switch while the driver reviews. Uses `send` (not `type`) because this is a direct instruction, no human-in-the-loop edit needed.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "Shared worktree is the key lever: the driver already has the commit on disk, so `git show <sha>` is the canonical way to see the diff — no need to ask the worker to re-emit it (wastes tokens, worker's scrollback showed only tool markers not the diff body). `talk read` is kept as a lightweight secondary check on test output and commit hash, since the scrollback does carry those. The final `talk send` is non-blocking and prevents the worker from auto-pushing while the driver reviews. No polling loop is needed because the worker is already idle (last line was a question, pane is waiting on the driver). `talk ping` would be redundant. `talk type` was considered for step 3 but rejected because there's no human in the worker pane to edit the draft — the worker is another Claude that just needs a clear instruction."
+}

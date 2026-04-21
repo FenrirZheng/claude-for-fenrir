@@ -1,0 +1,60 @@
+I'll review that file for security risks. Let me start by reading it.
+
+⠋ Reading file…
+⠙ Reading file…
+⠹ Reading file…
+✓ Read internal/exchangeapi/auth/handlers.go (387 lines)
+
+Let me also check the supporting files it references.
+
+⠋ Reading file…
+✓ Read internal/exchangeapi/auth/middleware.go (112 lines)
+
+⠋ Reading file…
+✓ Read internal/exchangeinfra/jwt/signer.go (89 lines)
+
+⠋ Reading file…
+✓ Read internal/exchangeinfra/session/store.go (156 lines)
+
+⠋ Reading file…
+✓ Read internal/config/auth.go (43 lines)
+
+Now let me trace the login path end-to-end.
+
+The LoginHandler calls VerifyPassword which uses argon2id with a 16-byte salt from crypto/rand, parameters time=3, memory=64MiB, threads=4. Those look reasonable for 2026. The salt is stored per-user in the users table.
+
+On success it calls IssueJWT which signs with HS256 using a key loaded from env AUTH_JWT_SECRET at startup. The JWT carries user_id, role, and exp (set to now+15min). A refresh token (opaque, 32 random bytes, base64url) is also issued and stored in redis with TTL 14 days keyed by user_id.
+
+Rate limiting: there's an IP-based limiter on /v6/jwt/login (10 req/min) and a user-based limiter on /v6/jwt/refresh (30 req/min). Both use redis_rate GCRA.
+
+Let me check the refresh flow.
+
+On refresh, the handler validates the opaque token against redis, then re-issues a new JWT and a NEW refresh token, rotating the old one out of redis immediately. This is the correct rotation pattern.
+
+Logout drops the refresh token from redis but — and this is the first risk — there is no JWT denylist. An attacker who has a live JWT from before logout can keep using it until exp. Given 15-min exp that's bounded, but for logout-from-all-devices or a compromised-device flow, this window is long.
+
+Checking /v6/jwt/me — it validates the JWT and returns the full user row. It includes email, phone, kyc_status, and crucially, the user's hashed password column. That's a serious leak — even though it's hashed, exposing hashes lets an offline attacker correlate. Let me double-check… yes, line 234 of handlers.go pulls SELECT * from users and then does a simple json.Marshal. This is risk #2.
+
+CORS: the middleware reads AllowedOrigins from env and defaults to ["*"] if empty. In staging the env var IS set, but in a dev override scenario the wildcard fallback could leak. Not as bad as #2 but worth flagging.
+
+CSRF: since auth is bearer-token only and there's no cookie auth, CSRF is not applicable here. Good.
+
+Session fixation: JWT is fresh per login, refresh rotates — no fixation surface.
+
+Timing attacks: the VerifyPassword path calls subtle.ConstantTimeCompare on the argon2 output. Good. The username lookup however hits the DB first and returns early if user doesn't exist — this is a user-enumeration oracle via timing. That's risk #3.
+
+Input validation: the login handler decodes JSON with DisallowUnknownFields, good. Email is validated with net/mail.ParseAddress, phone with a regex. Password is checked for length (8-128) but no complexity requirements — this is a policy call, not a code risk.
+
+Clickjacking / frame-ancestors: the auth handlers set no security headers. But that's the frontend's job in this app — marking as informational.
+
+Let me finalize the top 3.
+
+=== TOP 3 SECURITY RISKS ===
+
+1. JWT has no revocation / denylist. A leaked or pre-logout JWT stays valid for the full 15-minute expiry window, with no way to force-invalidate even on password change or logout-all-devices. Fix: add a revocation list keyed by jti in redis with TTL matching JWT exp.
+
+2. /v6/jwt/me returns the full users row including the password hash column. Even hashed, leaking the hash enables offline cracking. Fix: project the response through a DTO that excludes password_hash, session_secret, and any other sensitive columns.
+
+3. Login path has a user-enumeration timing oracle — non-existent user returns fast, existing user runs argon2 before rejecting. Fix: always run a dummy argon2 verification against a fixed-cost hash when the user lookup misses, so success/failure timing is indistinguishable.
+
+Done.

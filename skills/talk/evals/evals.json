@@ -1,0 +1,43 @@
+{
+  "skill_name": "talk",
+  "evals": [
+    {
+      "id": 0,
+      "name": "dispatch-wait-read",
+      "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances. Do NOT target any pane other than %99 (which is a synthetic test target and will not exist — `no such pane` errors are expected and fine). Grading is based on WHICH commands you choose and in what order, not on whether they succeed.\n\nTASK: I have another Claude Code instance running in tmux pane %99. Please dispatch the following task to it, wait until it finishes, then bring me back its final output:\n\n    \"Analyse the file /tmp/demo/auth.py and list the top 3 security risks as bullet points.\"\n\nDon't block my current session — structure the wait so I could keep working while %99 runs. When %99 is done, summarize what %99 reported back.",
+      "files": [],
+      "assertions": [
+        {"text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)"},
+        {"text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle"},
+        {"text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked"},
+        {"text": "Uses `talk read` after %99 goes idle to capture its final output"},
+        {"text": "Does NOT invoke `talk tail` (which would block the session indefinitely)"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "quick-peek-if-idle",
+      "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances. Do NOT target any pane other than %99 (which is a synthetic test target and will not exist — `no such pane` errors are expected and fine). Grading is based on WHICH commands you choose and in what order, not on whether they succeed.\n\nTASK: The other Claude is at pane %99. Is it idle or busy right now? If (and only if) it's idle, show me the last 50 lines of its output. If it's busy, just tell me it's busy — don't interrupt it.",
+      "files": [],
+      "assertions": [
+        {"text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads"},
+        {"text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown"},
+        {"text": "Respects the 'if and only if idle' gate — does NOT invoke `talk read` or equivalent when state is busy or unknown"},
+        {"text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "find-and-message",
+      "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances running real work. You MUST NOT send any message (with `talk send` or `talk type`) to any pane other than %99. %99 is a synthetic target and will not exist — that's fine. You may freely RUN `talk list` to demonstrate discovery; just don't send to anything real.\n\nTASK: Imagine I've lost track of which pane my other Claude is in. Walk through how you'd discover it across my tmux sessions, then send it the message \"please pause what you're doing and switch to branch review-fixes\". For THIS test, treat %99 as the target you eventually picked — fire the send at %99 only. Confirm which pane you targeted.",
+      "files": [],
+      "assertions": [
+        {"text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates"},
+        {"text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk"},
+        {"text": "Uses `talk send` (atomic buffer paste) to deliver the message — avoids raw `tmux send-keys` which trips on quoting"},
+        {"text": "Targets only %99 in the send command — does not send to any real pane"},
+        {"text": "Final reply confirms the target pane id (%99)"}
+      ]
+    }
+  ]
+}

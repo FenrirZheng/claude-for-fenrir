@@ -1,0 +1,110 @@
+{
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/worktree-guard.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cross-pane-detect.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cross-pane-enforce.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "kotlin-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "serena@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "supabase@claude-plugins-official": true,
+    "agent-sdk-dev@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "coderabbit@claude-plugins-official": true,
+    "sourcegraph@claude-plugins-official": true,
+    "discord@claude-plugins-official": true,
+    "obsidian@obsidian-skills": true,
+    "ralph-loop@claude-plugins-official": true,
+    "greptile@claude-plugins-official": true,
+    "user-story-skills@user-story-skills": true,
+    "tags-symbol-lookup@fenrir-claude-public-skills": true,
+    "open-in-intellij@fenrir-claude-public-skills": true,
+    "intellij-code-reference@fenrir-claude-public-skills": true,
+    "stripe@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "obsidian-skills": {
+      "source": {
+        "source": "github",
+        "repo": "kepano/obsidian-skills"
+      }
+    },
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/skills"
+      }
+    },
+    "user-story-skills": {
+      "source": {
+        "source": "git",
+        "url": "git@gitlab.muzixt.com:ai-skills/user-story-skills.git"
+      },
+      "autoUpdate": true
+    },
+    "fenrir-claude-public-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/home/fenrir/code/ai-skills/claude-code-public-skill"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true
+}

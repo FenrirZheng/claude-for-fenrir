@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Output file written", "passed": true, "evidence": "answer.md written"},
+    {"text": "Named a specific i18n key with locale file citation", "passed": true, "evidence": "page_head_btn_login from locales/en.json:357"},
+    {"text": "Found at least one call-site reference", "passed": true, "evidence": "6 references found"},
+    {"text": "file:line format", "passed": true, "evidence": "file:line references present"},
+    {"text": "(with_skill only) Used mcp__webstorm__search_in_files_by_text", "passed": null, "evidence": "N/A — baseline"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only"}
+  ]
+}

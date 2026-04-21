@@ -1,0 +1,11 @@
+{
+  "tools_used": [
+    "Read",
+    "ToolSearch",
+    "mcp__idea__search_symbol",
+    "mcp__idea__search_in_files_by_regex",
+    "Write"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Followed the intellij-code-reference skill's pattern for 'what extends X' questions: MCP-only, no rg. Used mcp__idea__search_symbol('WorkflowAuditStrategy') to locate the base class and candidate subclasses in one semantic index-backed call, then cross-checked with mcp__idea__search_in_files_by_regex('extends\\s+WorkflowAuditStrategy\\b', *.java) as the skill recommends. Both returned the same 3 direct subclasses: OrderWorkflowAuditStrategy, BillWorkflowAuditStrategy, OrderReturnWorkflowAuditStrategy. Reported file:line with signatures per skill's output discipline."
+}

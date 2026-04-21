@@ -1,0 +1,11 @@
+{
+  "expectations": [
+    {"text": "Output file written", "passed": true, "evidence": "answer.md written"},
+    {"text": "Inspected api/companyService.js to identify exports", "passed": true, "evidence": "identified 6 methods: getCompanyInfo, collectionCompany, delCollectionCompany, getCollectionCompany, getCompanyList, getLocations"},
+    {"text": "Found at least one caller file", "passed": true, "evidence": "store/company.js direct; 4 Vue files indirect"},
+    {"text": "Results grouped by caller file", "passed": true, "evidence": "grouped per-file in report"},
+    {"text": "file:line format", "passed": true, "evidence": "explicit file:line references"},
+    {"text": "(with_skill only) Used mcp__webstorm__*", "passed": true, "evidence": "agent: 'WebStorm MCP only'"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only"}
+  ]
+}

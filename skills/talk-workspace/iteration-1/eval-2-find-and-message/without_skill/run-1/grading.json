@@ -1,0 +1,38 @@
+{
+  "eval_id": 2,
+  "eval_name": "find-and-message",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates",
+      "passed": true,
+      "evidence": "Step 2: `tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_id} #{pane_current_command} #{pane_title} #{pane_current_path}'`."
+    },
+    {
+      "text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk",
+      "passed": true,
+      "evidence": "Step 3: `tmux display-message -p '#{pane_id}'` → `%14`, report states 'identify myself so I don't self-message'."
+    },
+    {
+      "text": "Uses `talk send` (atomic buffer paste) to deliver the message — avoids raw `tmux send-keys` which trips on quoting",
+      "passed": false,
+      "evidence": "Used `tmux send-keys -t %99 'please pause what you'\\''re doing...' Enter` — and the report explicitly notes 'message got mangled by nested quotes'. Had to retry with `-l` flag. Exactly the pitfall `talk send`'s buffer-paste approach is designed to avoid."
+    },
+    {
+      "text": "Targets only %99 in the send command — does not send to any real pane",
+      "passed": true,
+      "evidence": "Both send-keys calls targeted %99 only."
+    },
+    {
+      "text": "Final reply confirms the target pane id (%99)",
+      "passed": true,
+      "evidence": "Final reply: 'Target picked for this test: **%99** (synthetic).'"
+    }
+  ],
+  "summary": {
+    "pass_rate": 0.8,
+    "passed": 4,
+    "failed": 1,
+    "total": 5
+  }
+}

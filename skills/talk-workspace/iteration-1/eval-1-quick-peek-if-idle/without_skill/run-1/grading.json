@@ -1,0 +1,33 @@
+{
+  "eval_id": 1,
+  "eval_name": "quick-peek-if-idle",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads",
+      "passed": false,
+      "evidence": "Baseline used raw `tmux display-message -p -t %99 '#{pane_current_command} #{pane_pid}'` — a generic pane query, not the purpose-built idle/busy probe. Missed the pane_title glyph signal that `talk ping` reads."
+    },
+    {
+      "text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown",
+      "passed": false,
+      "evidence": "No ping was run, so no exit-code interpretation occurred. The baseline's heuristic (two capture-pane snapshots over time) is weaker and was not actually executed."
+    },
+    {
+      "text": "Respects the 'if and only if idle' gate — does NOT invoke `talk read` or equivalent when state is busy or unknown",
+      "passed": true,
+      "evidence": "Baseline did not attempt a `capture-pane -S -50` dump since the pane didn't exist; held back appropriately. The gate was respected, albeit incidentally."
+    },
+    {
+      "text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)",
+      "passed": true,
+      "evidence": "Only used read-only tmux probes (`display-message`, `list-panes`, `capture-pane`). No `send-keys`."
+    }
+  ],
+  "summary": {
+    "pass_rate": 0.5,
+    "passed": 2,
+    "failed": 2,
+    "total": 4
+  }
+}

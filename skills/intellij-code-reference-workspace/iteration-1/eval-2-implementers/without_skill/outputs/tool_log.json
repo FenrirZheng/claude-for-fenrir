@@ -1,0 +1,10 @@
+{
+  "tools_used": [
+    "Grep",
+    "ToolSearch",
+    "mcp__idea__search_symbol",
+    "mcp__idea__search_in_files_by_regex",
+    "Write"
+  ],
+  "approach_summary": "Initial Grep for 'extends WorkflowAuditStrategy' returned no matches (likely because the rg tool wasn't indexing the same way IntelliJ does or scope mismatch). Loaded IntelliJ MCP tools via ToolSearch, then used mcp__idea__search_symbol to find the WorkflowAuditStrategy base class plus subclasses, and confirmed with mcp__idea__search_in_files_by_regex using the pattern 'extends\\s+WorkflowAuditStrategy' scoped to *.java. Found 3 direct subclasses: OrderWorkflowAuditStrategy, BillWorkflowAuditStrategy, and OrderReturnWorkflowAuditStrategy."
+}

@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Identified the dynamic dispatch chain (DefaultRuleEngineService.getSimpleRuleService \u2192 applicationContext.getBean)",
+      "passed": true,
+      "evidence": "Found DefaultOrganizationAuditRuleService:111 + DefaultRuleEngineService:16"
+    },
+    {
+      "text": "Noted absence of statically-typed call sites",
+      "passed": true,
+      "evidence": "Stated 'no direct Java call sites'"
+    },
+    {
+      "text": "Used MCP semantic tools (get_symbol_info / search_symbol) before falling back to text search",
+      "passed": true,
+      "evidence": "Tool log shows search_symbol \u2192 get_symbol_info before search_in_files"
+    },
+    {
+      "text": "Identified subclass override behavior (OrderRuleService.execute does not call super)",
+      "passed": true,
+      "evidence": "Noted in answer"
+    }
+  ]
+}

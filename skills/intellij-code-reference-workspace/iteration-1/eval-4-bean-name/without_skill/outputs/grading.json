@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Found @Bean registration at OrderAuditAutoConfiguration.java:13",
+      "passed": false,
+      "evidence": "MISSED \u2014 said the bean doesn't exist"
+    },
+    {
+      "text": "Found the strategy registry pattern (AuditStrategyDispatch)",
+      "passed": false,
+      "evidence": "MISSED entirely"
+    },
+    {
+      "text": "Did NOT falsely conclude the bean doesn't exist",
+      "passed": false,
+      "evidence": "Falsely concluded 'symbol does not exist in this repo'"
+    },
+    {
+      "text": "Used MCP search_in_files_by_text instead of rg",
+      "passed": false,
+      "evidence": "Used 7 grep calls, never tried MCP"
+    }
+  ]
+}

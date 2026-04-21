@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Output file written", "passed": true, "evidence": "answer.md written"},
+    {"text": "Found at least one caller file:line for user-creation service method", "passed": false, "evidence": "Baseline searched only for literal 'UserService', found zero, and stopped. Did not extend to 'similarly-named user-creation service method' as prompt requested. Missed BgUserService.addBgUser and SeekerService.registerSeeker which the with_skill run found (3 caller sites)."},
+    {"text": "(with_skill only) routing rule", "passed": null, "evidence": "N/A — baseline"},
+    {"text": "(with_skill only) no wrong MCP", "passed": null, "evidence": "N/A — baseline"},
+    {"text": "file:line format", "passed": true, "evidence": "format used (empty list)"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only"}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "tools_used": [
+    "Read (SKILL.md)",
+    "ToolSearch (load mcp__idea__* schemas)",
+    "mcp__idea__search_symbol (OrderWorkflowAuditStrategy)",
+    "mcp__idea__search_in_files_by_text (OrderWorkflowAuditStrategy, case-sensitive)",
+    "mcp__idea__search_in_files_by_text (orderWorkflowAuditStrategy bean-name form)",
+    "mcp__idea__search_in_files_by_text (getStrategyName)",
+    "mcp__idea__search_in_files_by_text (getBean(\\\"OrderWorkflowAuditStrategy\\\")",
+    "mcp__idea__search_in_files_by_text (strategyMap.get)",
+    "Read (OrderAuditAutoConfiguration.java)",
+    "Read (OrderWorkflowAuditStrategy.java)",
+    "Read (AuditStrategyDispatch.java)",
+    "Read (smart-park-admin/src/utils/request.js slice)",
+    "Write (answer.md, tool_log.json)"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Followed intellij-code-reference SKILL: used IntelliJ MCP (PSI-indexed) over rg. search_symbol located the class, its @Bean factory, and a sibling strategy, plus the getStrategyName() return. Cross-checked with search_in_files_by_text for both the type name and the camelCase bean id, confirming no @Qualifier or getBean(name) usage. Traced the logical name 'OrderWorkflowAuditStrategy' through AuditStrategyDispatch: an ApplicationContextAware registry that builds a Map<String,AuditStrategy> keyed by getStrategyName() and exposes getAuditStrategy(name). Read the three core Java files and the frontend request.js slice to verify call sites. Reported file:line for registration (@Bean method), registry build, lookup API, runtime lookup call sites, and the frontend string-literal use."
+}

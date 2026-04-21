@@ -1,0 +1,26 @@
+{
+  "scenario_id": "2",
+  "skill_version": "old",
+  "approach": "Dispatch the task with talk send, then run a background ping-poll loop so the driver's foreground stays free; once the loop exits (worker idle), capture the tail with talk read — large enough to catch the <<<RESULT ... RESULT>>> block at the end of ~100 lines of per-package output.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "talk send %42 \"Run the full integration test suite (go test ./...) against the current wallet service implementation and identify any regressions. For each regression, give test name, failure mode, and suspected root cause.\"",
+      "purpose": "Dispatch the task to the worker Claude in pane %42 via a single atomic paste+Enter.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 15; done",
+      "purpose": "Poll the worker's title indicator until it flips back to idle (ping exit 0). Sleep 15s between probes — worker takes ~5 min, so ~20 cheap probes is plenty and cheaper than a tight loop. Run in background so the driver's foreground session stays available for other conversations during the wait.",
+      "run_in_background": true
+    },
+    {
+      "step": 3,
+      "cmd": "talk read %42 200",
+      "purpose": "Once the background poll finishes (notification fires), grab the tail of the worker's pane. 200 lines comfortably covers the ~100-line per-package stream plus the final <<<RESULT ... RESULT>>> report block so the regression findings land in the driver's context.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "talk ping is the canonical idle/busy probe per the skill manual, and the manual's 'Dispatch a task to another Claude and wait for the answer' pattern is exactly this shape: send, poll-until-idle in background, then read. Backgrounding the poll satisfies the 'don't block foreground' requirement — the user can interleave other work, and the Bash completion notification signals when to read. A 200-line read window is safely above the fixture's ~116 visible lines, so the <<<RESULT>>> block (the actual deliverable) is guaranteed to be inside tmux's scrollback window when captured. A file-handoff approach was considered but rejected: adds a second coordination surface (asking the worker to write a file, then reading it) when the pane scrollback already contains a self-delimited RESULT block — strictly more moving parts for the same outcome."
+}

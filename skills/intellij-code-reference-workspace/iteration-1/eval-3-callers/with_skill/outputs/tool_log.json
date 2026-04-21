@@ -1,0 +1,21 @@
+{
+  "tools_used": [
+    "Read(SKILL.md)",
+    "ToolSearch(select:mcp__idea__get_project_modules,mcp__idea__search_symbol,mcp__idea__get_symbol_info)",
+    "mcp__idea__get_project_modules",
+    "mcp__idea__search_symbol(OrderCommonRuleService)",
+    "mcp__idea__get_symbol_info(class OrderCommonRuleService)",
+    "mcp__idea__get_symbol_info(supports)",
+    "mcp__idea__get_symbol_info(execute)",
+    "ToolSearch(select:mcp__idea__search_in_files_by_text,mcp__idea__search_in_files_by_regex,mcp__idea__find_files_by_name_keyword)",
+    "mcp__idea__search_in_files_by_text(OrderCommonRuleService)",
+    "mcp__idea__search_symbol(SimpleRuleService)",
+    "mcp__idea__search_in_files_by_text(getSimpleRuleService)",
+    "mcp__idea__search_in_files_by_regex(\"OrderCommonRuleService\")",
+    "Read(OrderRuleService.java)",
+    "Read(DefaultRuleEngineService.java)",
+    "Read(DefaultOrganizationAuditRuleService.java)"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Probed IntelliJ MCP with get_project_modules (159 modules, confirmed available). Used search_symbol to locate OrderCommonRuleService (found single class at we-business-order-audit/.../OrderCommonRuleService.java:11, Spring @Component). Used get_symbol_info on the class, supports() and execute() — returned signatures/docs but not a usages list in this MCP build. Fell back to search_in_files_by_text for 'OrderCommonRuleService' to enumerate references: found one subclass (OrderRuleService extends it) and only self-references/tags. Since the class is a @Component(\"OrderCommonRuleService\") implementing SimpleRuleService, followed framework wiring: searched getSimpleRuleService to find the dispatch in DefaultRuleEngineService (getBean by name) and DefaultOrganizationAuditRuleService:109-111 (the lone invocation site keyed by DB-configured rule name). Confirmed the literal \"OrderCommonRuleService\" appears only at the @Component annotation, so there are no compile-time callers of execute/supports; runtime invocation is through Spring bean lookup driven by audit_organization_rules DB rows. The subclass OrderRuleService overrides execute without calling super and does not invoke supports."
+}

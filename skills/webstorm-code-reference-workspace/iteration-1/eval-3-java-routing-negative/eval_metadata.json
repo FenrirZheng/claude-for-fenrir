@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "java-routing-negative",
+  "prompt": "In the Java Spring Boot project at /home/fenrir/code/camhr/camhr, find all callers of UserService.create or similar.",
+  "assertions": [
+    {"text": "Output file written to outputs/answer.md"},
+    {"text": "Found at least one caller file:line for the user-creation service method"},
+    {"text": "(with_skill only) Explicitly recognized this as a Java project and deferred to IntelliJ MCP (mcp__idea__*) per the skill's language-based routing rule — NOT mcp__webstorm__*"},
+    {"text": "(with_skill only) Did not incorrectly use mcp__webstorm__* tools on the Java project"},
+    {"text": "Reports file:line format"},
+    {"text": "Did not modify any files"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "quick-peek-if-idle",
+  "prompt": "SAFETY NOTE: You are inside a real tmux session with other Claude instances. Do NOT target any pane other than %99 (which is a synthetic test target and will not exist — `no such pane` errors are expected and fine). Grading is based on WHICH commands you choose and in what order, not on whether they succeed.\n\nTASK: The other Claude is at pane %99. Is it idle or busy right now? If (and only if) it's idle, show me the last 50 lines of its output. If it's busy, just tell me it's busy — don't interrupt it.",
+  "assertions": [
+    {"text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads"},
+    {"text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown"},
+    {"text": "Respects the 'if and only if idle' gate — does NOT invoke `talk read` or equivalent when state is busy or unknown"},
+    {"text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)"}
+  ]
+}

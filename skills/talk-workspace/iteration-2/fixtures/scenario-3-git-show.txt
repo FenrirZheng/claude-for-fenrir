@@ -1,0 +1,69 @@
+commit a1b2c3d4e5f678901234567890abcdef12345678
+Author: worker-claude <worker@local>
+Date:   2026-04-21 13:42:18 +0800
+
+    feat(auth): accept cookie session when Authorization header missing
+
+diff --git a/internal/exchangeapi/auth/middleware.go b/internal/exchangeapi/auth/middleware.go
+index 4f2e8a1..7c9d3e2 100644
+--- a/internal/exchangeapi/auth/middleware.go
++++ b/internal/exchangeapi/auth/middleware.go
+@@ -18,12 +18,25 @@ func RequireAuth(next http.Handler) http.Handler {
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		ctx := r.Context()
+ 		authHeader := r.Header.Get("Authorization")
+-		if authHeader == "" {
++
++		var token string
++		if authHeader != "" {
++			if !strings.HasPrefix(authHeader, "Bearer ") {
++				http.Error(w, "invalid auth scheme", http.StatusUnauthorized)
++				return
++			}
++			token = strings.TrimPrefix(authHeader, "Bearer ")
++		} else if cookie, err := r.Cookie(sessionCookieName); err == nil {
++			token = cookie.Value
++		} else {
+ 			http.Error(w, "missing authorization", http.StatusUnauthorized)
+ 			return
+ 		}
+-		if !strings.HasPrefix(authHeader, "Bearer ") {
+-			http.Error(w, "invalid auth scheme", http.StatusUnauthorized)
+-			return
+-		}
+-		token := strings.TrimPrefix(authHeader, "Bearer ")
++
+ 		claims, err := a.verifier.Verify(ctx, token)
+ 		if err != nil {
+ 			http.Error(w, "invalid token", http.StatusUnauthorized)
+diff --git a/internal/exchangeapi/auth/middleware_test.go b/internal/exchangeapi/auth/middleware_test.go
+index 8a2c0f1..3d5e4b9 100644
+--- a/internal/exchangeapi/auth/middleware_test.go
++++ b/internal/exchangeapi/auth/middleware_test.go
+@@ -45,3 +45,38 @@ func TestRequireAuth_BearerToken(t *testing.T) {
+ 		t.Errorf("expected 200, got %d", rec.Code)
+ 	}
+ }
++
++func TestRequireAuth_CookieFallback(t *testing.T) {
++	a := newTestAuth(t)
++	h := a.RequireAuth(okHandler)
++	req := httptest.NewRequest("GET", "/", nil)
++	req.AddCookie(&http.Cookie{Name: sessionCookieName, Value: validToken})
++	rec := httptest.NewRecorder()
++	h.ServeHTTP(rec, req)
++	if rec.Code != http.StatusOK {
++		t.Errorf("expected 200, got %d", rec.Code)
++	}
++}
++
++func TestRequireAuth_NoHeaderNoCookie(t *testing.T) {
++	a := newTestAuth(t)
++	h := a.RequireAuth(okHandler)
++	req := httptest.NewRequest("GET", "/", nil)
++	rec := httptest.NewRecorder()
++	h.ServeHTTP(rec, req)
++	if rec.Code != http.StatusUnauthorized {
++		t.Errorf("expected 401, got %d", rec.Code)
++	}
++}

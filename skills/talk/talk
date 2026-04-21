@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# talk — inter-pane messaging via tmux
+#
+# Usage:
+#   talk list                         List all panes (including from other sessions)
+#   talk here                         Print THIS pane's target id (paste into other session)
+#   talk send <target> <message...>   Send a message + Enter to target pane
+#   talk type <target> <message...>   Type message (no Enter), useful for drafts
+#   talk read <target> [lines]        Print last N lines of target pane (default 80)
+#   talk tail <target> [lines]        Follow target pane output (Ctrl-C to stop)
+#   talk ping <target>                Check if a Claude Code pane is idle (exit 0) or busy (exit 1)
+#
+# Target format: session:window.pane   e.g.  main:0.1   or  %42   (unique pane id)
+#
+# Tip: `talk here` on each pane to get its id, then `talk send <id> "hello"`.
+
+set -euo pipefail
+
+die() { printf 'talk: %s\n' "$*" >&2; exit 1; }
+
+require_tmux() {
+  [[ -n "${TMUX:-}" ]] || die "not inside a tmux session"
+  command -v tmux >/dev/null || die "tmux not installed"
+}
+
+cmd_list() {
+  require_tmux
+  tmux list-panes -a -F \
+    '#{pane_id}  #{session_name}:#{window_index}.#{pane_index}  [#{pane_current_command}]  #{pane_title}'
+}
+
+cmd_here() {
+  require_tmux
+  local id=${TMUX_PANE:?TMUX_PANE not set — run from inside a tmux pane}
+  local sess cmd
+  sess=$(tmux display-message -p -t "$id" '#{session_name}:#{window_index}.#{pane_index}')
+  cmd=$(tmux display-message -p -t "$id" '#{pane_current_command}')
+  printf 'pane_id: %s\ntarget:  %s\ncommand: %s\n' "$id" "$sess" "$cmd"
+}
+
+# Send via buffer: atomic, fast, preserves exact text (no char-by-char race).
+send_text() {
+  local target=$1 text=$2 press_enter=$3
+  local buf="talk-$$-$RANDOM"
+  tmux set-buffer -b "$buf" -- "$text"
+  tmux paste-buffer -b "$buf" -d -t "$target"  # -d deletes buffer after paste
+  if [[ $press_enter == 1 ]]; then
+    tmux send-keys -t "$target" Enter
+  fi
+}
+
+cmd_send() {
+  require_tmux
+  [[ $# -ge 2 ]] || die "usage: talk send <target> <message...>"
+  local target=$1; shift
+  send_text "$target" "$*" 1
+}
+
+cmd_type() {
+  require_tmux
+  [[ $# -ge 2 ]] || die "usage: talk type <target> <message...>"
+  local target=$1; shift
+  send_text "$target" "$*" 0
+}
+
+cmd_read() {
+  require_tmux
+  [[ $# -ge 1 ]] || die "usage: talk read <target> [lines]"
+  local target=$1 lines=${2:-80}
+  tmux capture-pane -t "$target" -p -S "-$lines"
+}
+
+cmd_ping() {
+  require_tmux
+  [[ $# -ge 1 ]] || die "usage: talk ping <target>"
+  local target=$1 title state
+  title=$(tmux display-message -p -t "$target" '#{pane_title}' 2>/dev/null) \
+    || die "no such pane: $target"
+
+  # Claude Code title prefix is the state indicator:
+  #   "✳ "      (U+2733) -> idle  (fresh, or finished last task and waiting for input)
+  #   braille   (U+2800-U+28FF spinner) -> busy
+  # Task name after the prefix persists across the idle->busy->idle cycle,
+  # so match on the prefix character, not the whole title.
+  case "$title" in
+    "✳ "*|"Claude Code") state="idle" ;;
+    "")                  state="unknown" ;;
+    *)                   state="busy" ;;
+  esac
+
+  printf '%-10s %s  title=%s\n' "$state" "$target" "$title"
+  case $state in
+    idle)    exit 0 ;;
+    busy)    exit 1 ;;
+    *)       exit 2 ;;
+  esac
+}
+
+cmd_tail() {
+  require_tmux
+  [[ $# -ge 1 ]] || die "usage: talk tail <target> [lines]"
+  local target=$1 lines=${2:-40}
+  local last=""
+  while :; do
+    local cur
+    cur=$(tmux capture-pane -t "$target" -p -S "-$lines")
+    if [[ "$cur" != "$last" ]]; then
+      clear
+      printf '── tail %s (Ctrl-C to stop) ──\n%s\n' "$target" "$cur"
+      last=$cur
+    fi
+    sleep 1
+  done
+}
+
+cmd_help() {
+  # Print the leading comment block (skipping the shebang), stopping at the first blank line.
+  awk 'NR==1 {next} /^$/ {exit} /^#/ {sub(/^# ?/, ""); print}' "$0"
+}
+
+main() {
+  local sub=${1:-help}
+  shift || true
+  case "$sub" in
+    list|ls)   cmd_list "$@" ;;
+    here|who)  cmd_here "$@" ;;
+    send)      cmd_send "$@" ;;
+    type)      cmd_type "$@" ;;
+    read|cat)  cmd_read "$@" ;;
+    tail|watch)cmd_tail "$@" ;;
+    ping)      cmd_ping "$@" ;;
+    help|-h|--help) cmd_help ;;
+    *) die "unknown command: $sub (try 'talk help')" ;;
+  esac
+}
+
+main "$@"

@@ -1,0 +1,4 @@
+{
+  "tools_used": ["Grep", "Bash(fdfind)", "Read", "Write"],
+  "approach_summary": "Searched the repo with rg/fdfind for files named OrderRuleService, then Read the matching Java file to extract the class declaration line and write a summary."
+}

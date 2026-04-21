@@ -20,6 +20,65 @@ These are the conventions for **new** content. The existing vault still has lega
   - Wrong: `[Spring Boot Auto Configuration](Spring%20Boot%20Auto%20Configuration.md)`
 - **Language**: the user writes in English and 繁體中文 (Traditional Chinese). Match the language of the conversation. Never use Simplified Chinese.
 
+## Frontmatter convention
+
+Every new note starts with YAML frontmatter. This is what makes notes filterable by `Knowledge Index.base` / `Recent Activity.base` and findable by future searches.
+
+```yaml
+---
+created: 2026-04-18
+updated: 2026-04-18
+tags: [topic/postgres, type/howto]   # see _TAG_TAXONOMY.md — do not invent tags inline
+aliases: [Postgres VACUUM, autovacuum, vacuum 調校]   # synonyms, abbreviations, the other language
+source: https://...                  # original URL if you're capturing from somewhere
+status: stable                       # draft | stable | outdated
+---
+```
+
+- **`aliases:` is the highest-leverage field** — currently empty across the entire vault. Always include English ↔ Chinese pairs, common abbreviations (`pg` for Postgres, `k8s` for Kubernetes), and any old name the topic used to go by. Obsidian resolves `[[Postgres VACUUM]]` to a note whose primary title is `PostgreSQL VACUUM Tuning` only if that alias is listed.
+- **`tags:` MUST come from `/home/fenrir/code/obsidian/_TAG_TAXONOMY.md`.** Read that file before tagging. If the tag you want isn't there, add it to the taxonomy first, then use it.
+- **Bump `updated:`** every time you edit an existing note. Don't touch `created:`.
+
+## Recommended note structure
+
+Default skeleton for any new technical note. Skipping a section is fine if it would be empty — don't pad.
+
+```markdown
+# Title (Title Case, matches filename)
+
+> [!summary] TL;DR
+> 1–3 sentences. Mention the technology name, the action verb, and the main keyword
+> a future search would use. This block is what makes the note discoverable by `rg`.
+
+## Why / Context
+What problem does this solve? When would future-me reach for this note?
+For incident / bug-fix notes, paste the **verbatim** error string here (do NOT paraphrase).
+A `## Error Signature` sub-section with the exact stack trace / error code is fair game.
+
+## How / Steps
+The actual content — code blocks, commands, configuration.
+
+## Gotchas
+Version constraints, edge cases, things that bit you.
+
+## Related
+- [[Wiki-link to prerequisite note]]
+- [[Wiki-link to follow-up note]]
+```
+
+The TL;DR block is non-negotiable for notes that will be read later — without it, the user has to scan the whole note to remember what it's about.
+
+## When to capture into Inbox vs writing a full note
+
+The vault has `/home/fenrir/code/obsidian/Inbox/` for quick captures. Use it when:
+
+- The user is mid-conversation and a learning emerges, but you don't yet have time to find the right folder, frontmatter, aliases, and `## Related` links.
+- The note is shorter than the standard skeleton would justify — single tip, single command, single observation.
+
+**Inbox capture format**: `Inbox/YYYY-MM-DD-short-slug.md` with at minimum a TL;DR and one line of original context (link back to source / chat / file). Skip frontmatter and `## Related` for inbox items — they get filled in during later batch reorganization.
+
+For anything that's clearly long-lived knowledge (≥ a screenful, or something the user explicitly says "save this"), skip Inbox and write the full note directly in the right location.
+
 ## Searching the vault
 
 Use `rg` for content searches and `fdfind` for filename searches — the user's global CLAUDE.md mandates these over `grep`/`find`. The Grep and Glob tools work too and are often faster.
@@ -47,7 +106,7 @@ rg -l "\[\[Spring Boot Auto Configuration" /home/fenrir/code/obsidian -g '*.md'
 
 ## Creating a new note
 
-1. **Check for an existing note first.** Before writing, search by filename and content. If a closely related note already exists, append to it instead of creating a near-duplicate. The goal is to grow existing notes over time, not fragment knowledge.
+1. **Check for an existing note first — and stop to ask if there's overlap.** Before writing, search by filename AND content (`fdfind` + `rg`). If the search returns a note whose topic overlaps the new content by more than ~50% (e.g. you want to write "PostgreSQL autovacuum tuning" and `Postgres VACUUM Tuning.md` already exists), **stop and tell the user**: "Found `<existing note>` — merge into it or create a separate note?" Do not silently create a near-duplicate. The goal is to grow existing notes, not fragment knowledge.
 
 2. **Pick a Title Case filename.** Turn the topic into a noun phrase: `PostgreSQL BRIN Index.md`, not `brin-index.md` or `postgres_brin.md`. A reader scanning a folder list should understand what the note is about from the filename alone.
 
@@ -72,9 +131,10 @@ Before writing a note, determine the correct location. **Do NOT default to vault
 
 **Decision process:**
 
+0. **Check `Knowledge Index.base` filters first.** Open `/home/fenrir/code/obsidian/Knowledge Index.base` and look at the `file.inFolder(...)` filters — only notes inside those folders show up in that Base view. (At time of writing: `codeVault / java / k8s / linux / docker / tools`.) If your topic clearly belongs to one of those domains, place the note inside that folder so the user can find it via the Base. If it would land at root, **explicitly tell the user**: "This note will be at vault root and won't appear in `Knowledge Index.base` — OK or should I put it under `<folder>` instead?"
 1. **Search for an existing category directory.** Use `fdfind` or `ls` to check whether the vault already has a folder matching the note's topic — e.g. `codeVault/vector_database/`, `codeVault/ai-agent/`, `codeVault/spring/`, etc.
 2. **If a matching category directory exists** → place the note inside it. Create a subdirectory for the specific product/technology if the category is broad (e.g. `codeVault/vector_database/chromadb/` for a ChromaDB note, not directly inside `vector_database/`).
-3. **If no matching category directory exists** → place the note at vault root in Title Case. This is the fallback, not the default.
+3. **If no matching category directory exists** → place the note at vault root in Title Case. This is the fallback, not the default; combine with the step 0 confirmation if it would skip the Base view.
 
 **The same rule applies to index notes.** An index that covers a category belongs inside that category directory, not at vault root. For example, `Vector Database-Index.md` goes inside `codeVault/vector_database/`, not at root.
 

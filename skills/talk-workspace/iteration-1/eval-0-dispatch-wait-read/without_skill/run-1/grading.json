@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "eval_name": "dispatch-wait-read",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)",
+      "passed": true,
+      "evidence": "Baseline initially tried raw `tmux send-keys`, then discovered+loaded the `talk` skill mid-run and retried with `talk send %99 \"…\"`. Leakage noted — baseline effectively became a with-skill run."
+    },
+    {
+      "text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle",
+      "passed": true,
+      "evidence": "Step 4 after skill leakage: `until talk ping %99 >/dev/null 2>&1; do sleep 3; done`."
+    },
+    {
+      "text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked",
+      "passed": true,
+      "evidence": "`run_in_background: true` on the wait chain."
+    },
+    {
+      "text": "Uses `talk read` after %99 goes idle to capture its final output",
+      "passed": true,
+      "evidence": "Chained `talk read %99 200` after the ping loop."
+    },
+    {
+      "text": "Does NOT invoke `talk tail` (which would block the session indefinitely)",
+      "passed": true,
+      "evidence": "No `talk tail` call in the command list."
+    }
+  ],
+  "notes": "SKILL LEAKAGE: baseline subagent auto-discovered and loaded the `talk` skill mid-task despite not being given the skill path. Baseline effectively converged to the with-skill strategy. Result: pass rate artificially inflated; the skill's 'discoverability value' still shows as the initial raw-tmux attempt failed.",
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  }
+}

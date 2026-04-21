@@ -1,0 +1,12 @@
+{
+  "expectations": [
+    {"text": "Output file written to outputs/answer.md", "passed": true, "evidence": "answer.md written per agent summary"},
+    {"text": "Identifies the component definition file components/blocks/apply-list.vue", "passed": true, "evidence": "agent reported: defined at components/blocks/apply-list.vue"},
+    {"text": "Finds the template usage(s) in pages/job-record/index.vue", "passed": true, "evidence": "pages/job-record/index.vue:17 and :41"},
+    {"text": "Finds the import statement", "passed": true, "evidence": "line 51 reported"},
+    {"text": "Finds the components: registration site", "passed": true, "evidence": "line 87 reported"},
+    {"text": "Reports results in file:line format", "passed": true, "evidence": "file:line format used throughout"},
+    {"text": "(with_skill only) Used mcp__webstorm__* tools as the primary search mechanism", "passed": true, "evidence": "agent: 'WebStorm MCP (search_in_files_by_text + regex cross-check)'"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only investigation confirmed"}
+  ]
+}

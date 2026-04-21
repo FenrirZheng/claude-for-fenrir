@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Correct file:line for OrderRuleService",
+      "passed": true,
+      "evidence": "OrderRuleService.java:26"
+    },
+    {
+      "text": "Tried gtags (global) before MCP for plain definition",
+      "passed": false,
+      "evidence": "Used Grep+fdfind, never tried global; rg failed silently first"
+    },
+    {
+      "text": "Probed MCP availability before relying on it",
+      "passed": false,
+      "evidence": "Did not use MCP at all"
+    },
+    {
+      "text": "Did not over-thrash (kept under 10 tool calls)",
+      "passed": true,
+      "evidence": "9 tool uses"
+    }
+  ]
+}

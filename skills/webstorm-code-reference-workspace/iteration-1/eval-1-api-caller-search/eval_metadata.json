@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "api-caller-search",
+  "prompt": "In the project at /home/fenrir/code/camhr/camhr-pc (a Vue 2 project open in WebStorm), find all call sites of functions exported from `api/companyService.js`. Report which Vue components / pages call which companyService function, grouped by file.",
+  "assertions": [
+    {"text": "Output file written to outputs/answer.md"},
+    {"text": "Inspected api/companyService.js to identify exported functions before searching for callers"},
+    {"text": "Found at least one caller file that imports from api/companyService"},
+    {"text": "Results are grouped by caller file as requested"},
+    {"text": "Reports results in file:line format for individual call sites"},
+    {"text": "(with_skill only) Used mcp__webstorm__* tools as the primary search mechanism, or explicitly explained MCP fallback"},
+    {"text": "Did not modify any files"}
+  ]
+}

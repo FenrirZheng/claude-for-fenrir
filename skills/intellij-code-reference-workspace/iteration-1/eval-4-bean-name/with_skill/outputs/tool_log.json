@@ -1,0 +1,21 @@
+{
+  "tools_used": [
+    "Read(SKILL.md)",
+    "ToolSearch(select:mcp__idea__*)",
+    "mcp__idea__get_project_modules",
+    "mcp__idea__search_symbol(q=OrderWorkflowAuditStrategy)",
+    "Read(OrderAuditAutoConfiguration.java)",
+    "mcp__idea__get_symbol_info(OrderWorkflowAuditStrategy.java:17)",
+    "mcp__idea__search_in_files_by_text(orderWorkflowAuditStrategy, case-sensitive)",
+    "mcp__idea__search_in_files_by_text(OrderWorkflowAuditStrategy, case-sensitive)",
+    "mcp__idea__search_in_files_by_text(\"OrderWorkflowAuditStrategy\" string literal)",
+    "mcp__idea__search_in_files_by_regex(@Qualifier|@Resource|getBean)",
+    "mcp__idea__search_symbol(q=WorkflowAuditStrategy)",
+    "mcp__idea__search_in_files_by_regex(getStrategyName|strategyName)",
+    "Read(AuditStrategyDispatch.java)",
+    "Write(answer.md)",
+    "Write(tool_log.json)"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Read the intellij-code-reference SKILL, loaded mcp__idea__* schemas via ToolSearch, probed IntelliJ MCP with get_project_modules (succeeded - 200+ modules indexed). Used search_symbol to locate the OrderWorkflowAuditStrategy class and found the @Bean factory method in OrderAuditAutoConfiguration.java. Ran case-sensitive text searches on both class name and bean name (lower-camel) to find all references. Searched via regex for @Qualifier/@Resource/getBean by-name patterns (none found). Discovered the bean is actually registered into a custom strategy registry (AuditStrategyDispatch) via getBeansOfType + getStrategyName(), not by Spring bean name; the 'name' used to look it up is the string returned from getStrategyName() ('OrderWorkflowAuditStrategy'), referenced from a frontend JS file. Reported file:line for @Bean registration, class definition, strategy self-id, dispatch registry, runtime lookup, and client-side key use."
+}

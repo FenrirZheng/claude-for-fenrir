@@ -1,0 +1,22 @@
+[
+  {"query": "in /home/fenrir/code/camhr/camhr-pc can you find every place the apply-list component is imported or registered? it's a vue component, i think its only used on one page but want to double check", "should_trigger": true},
+  {"query": "rename getCompanyInfo to fetchCompanyInfo everywhere in camhr-pc — this is a Vue 2 + Nuxt project open in WebStorm, watch out for Vuex action names and mapActions too", "should_trigger": true},
+  {"query": "hey where is the i18n key `page_login_btn_forgetPassword` referenced in my vue project at ~/code/camhr/camhr-pc? locales folder has 6 language json files so the key is defined many times but i want the code refs", "should_trigger": true},
+  {"query": "我要在 camhr-pc 裡找 components/blocks/phone-password-login.vue 被哪些檔案 import 了，IDE 已經開在 webstorm", "should_trigger": true},
+  {"query": "in the next.js app at ~/projects/shop, which pages/components import `useCart`? the hook is defined in `lib/cart/index.ts` and there's a barrel re-export through `@/lib/cart` so rg probably won't catch everything", "should_trigger": true},
+  {"query": "can you find all callers of the userService.login function in my vue 2 project? i think its exported from api/userService.js but not sure which components actually use it and which go through the vuex store", "should_trigger": true},
+  {"query": "my tsconfig has '@components' aliased to 'src/components' and i'm trying to figure out if the OldButton component is still used anywhere or if i can delete it — repo is in webstorm", "should_trigger": true},
+  {"query": "find where process.env.NEXT_PUBLIC_API_BASE_URL is read across /home/me/work/dashboard (it's a next.js 14 app). i'm about to rename the env var and need to update everything", "should_trigger": true},
+  {"query": "need to refactor a react hook — rename `useAuthContext` to `useAuth` across the whole app, it's used in ~40 components. the project is typescript react + vite, open in the IDE. don't break the barrel re-export in `hooks/index.ts`", "should_trigger": true},
+  {"query": "quick question - what implements the `PaymentProvider` interface in my next.js monorepo? i'm in packages/core and there are maybe 3 or 4 implementations in different packages", "should_trigger": true},
+  {"query": "where is UserService.create called in my spring boot project /home/fenrir/code/camhr/camhr? need the full caller list with file:line", "should_trigger": false},
+  {"query": "in my kotlin android project, find all usages of the `NetworkClient` class — it's in com.foo.bar.net. need this for a refactor", "should_trigger": false},
+  {"query": "grep my /var/log/nginx folder for all 5xx errors from the last hour and tell me which endpoints are the worst offenders", "should_trigger": false},
+  {"query": "commit my current changes in camhr-pc — i refactored the job-record component to fix the apply-list double-render bug. write a good commit message", "should_trigger": false},
+  {"query": "build me a new react landing page with a hero section, 3 feature cards, and a CTA footer. use shadcn components and tailwind. the app is a next.js 15 project", "should_trigger": false},
+  {"query": "write a PRD for the new camhr payment flow — 3-step checkout, saved-card support, and khmer/english i18n. target engineers who haven't seen the domain yet", "should_trigger": false},
+  {"query": "my `npm run dev` is failing with `Cannot find module './config/database'` — any idea why? project works for my coworker but not me after i pulled main", "should_trigger": false},
+  {"query": "how do i add a permission to my .claude/settings.json to allow npm commands without prompting every time?", "should_trigger": false},
+  {"query": "my python script needs a virtualenv. project is ~/work/ml-pipeline and uses torch + transformers. set it up and install the requirements", "should_trigger": false},
+  {"query": "can you find all the places where the `User` model is used in this django project at /home/me/work/api? model is in users/models.py, it's pure python not a frontend repo", "should_trigger": false}
+]

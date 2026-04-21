@@ -1,0 +1,29 @@
+{
+  "skill_name": "webstorm-code-reference",
+  "evals": [
+    {
+      "id": 0,
+      "name": "component-usage",
+      "prompt": "In the project at /home/fenrir/code/camhr/camhr-pc (a Vue 2 project open in WebStorm), find every place the `apply-list` component is imported or used. Report a list of file:line locations with one-line context for each hit. Do not modify any files.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "api-caller-search",
+      "prompt": "In the project at /home/fenrir/code/camhr/camhr-pc (a Vue 2 project open in WebStorm), find all call sites of functions exported from `api/companyService.js`. Report which Vue components / pages call which companyService function, grouped by file. Do not modify any files.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "i18n-key-lookup",
+      "prompt": "In the project at /home/fenrir/code/camhr/camhr-pc (a Vue 2 project open in WebStorm), pick any one i18n key that appears in `locales/en.json` (or equivalent) that contains the word `login`, and find every place that key is referenced (e.g. via `$t('…')` or `i18n.t('…')`). Report the key you picked and the file:line references. Do not modify any files.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "java-routing-negative",
+      "prompt": "In the Java Spring Boot project at /home/fenrir/code/camhr/camhr (a Java/Maven project that is NOT a JS/TS project), find all callers of `UserService.create` or a similarly-named user-creation service method. Report file:line locations. Do not modify any files.",
+      "files": []
+    }
+  ]
+}

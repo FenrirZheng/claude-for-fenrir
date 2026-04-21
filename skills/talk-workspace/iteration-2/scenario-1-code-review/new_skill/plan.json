@@ -1,0 +1,26 @@
+{
+  "scenario_id": "1",
+  "skill_version": "new",
+  "approach": "Dispatch via talk send asking the worker to write the final 3-risk summary to a file outside scrollback, background-poll with talk ping until idle, then Read the file exactly — avoiding pulling spinner/chain-of-thought noise into driver context.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "talk send %42 \"Review /home/fenrir/code/coinsasia/backend/backend-api-golang/internal/exchangeapi/auth/handlers.go and list the top 3 security risks. 3 short bullets is enough. When done, write ONLY the final 3 bullets (no working, no chain-of-thought) to /tmp/scenario-1-risks.md and then say done.\"",
+      "purpose": "Dispatch the review task plus a file-handoff instruction so the final answer lands in a clean file instead of noisy scrollback.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 3; done",
+      "purpose": "Wait for worker to go idle (~60s) using ping-only polling so scrollback never enters driver context; run in background to keep driver foreground free.",
+      "run_in_background": true
+    },
+    {
+      "step": 3,
+      "cmd": "Read /tmp/scenario-1-risks.md",
+      "purpose": "Pull only the clean 3-bullet summary into driver context — skips spinners, file-read markers, and internal reasoning from the worker's scrollback.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "File handoff beats talk read here because the worker streams ~60s of spinners and chain-of-thought; a talk read 200 would drag all of that into permanent driver context (several KB of ANSI/noise per turn). Writing a ~10-line file and Read-ing it is the cheapest channel. Ping-only polling in the background avoids accumulating redundant scrollback captures during the wait. No follow-up needed so no further talk send."
+}

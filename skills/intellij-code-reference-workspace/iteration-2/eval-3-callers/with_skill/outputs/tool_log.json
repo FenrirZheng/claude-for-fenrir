@@ -1,0 +1,19 @@
+{
+  "tools_used": [
+    "Read (SKILL.md)",
+    "ToolSearch (load mcp__idea__ schemas)",
+    "mcp__idea__search_symbol (OrderCommonRuleService)",
+    "Read (OrderCommonRuleService.java)",
+    "mcp__idea__search_in_files_by_text (OrderCommonRuleService)",
+    "Read (OrderRuleService.java)",
+    "mcp__idea__search_symbol (SimpleRuleService)",
+    "mcp__idea__search_in_files_by_text (SimpleRuleService)",
+    "Read (DefaultOrganizationAuditRuleService.java)",
+    "mcp__idea__search_in_files_by_text (\"OrderCommonRuleService\" literal)",
+    "mcp__idea__search_in_files_by_regex (OrderCommonRuleService\\s*(\\w+\\s*=|\\.))",
+    "Write (answer.md)",
+    "Write (tool_log.json)"
+  ],
+  "mcp_available": true,
+  "approach_summary": "Read the intellij-code-reference SKILL.md to confirm strategy. Used mcp__idea__search_symbol to locate the class (single hit) and confirm it's a Spring @Component('OrderCommonRuleService') implementing SimpleRuleService<Map<String,Object>>. Used mcp__idea__search_in_files_by_text on the class name to enumerate every reference project-wide — only one non-declaration hit: OrderRuleService extending it. Since no direct method call sites exist, followed the framework-dispatch pattern the skill recommends: searched for SimpleRuleService usages and found DefaultOrganizationAuditRuleService.audit() at line 111 calling ruleEngineService.getSimpleRuleService(rule.getRules()).execute(parameters) — this is the real (polymorphic) caller, with bean name coming from the DB-stored AuditRule.rules column. Confirmed the literal string 'OrderCommonRuleService' appears nowhere except the @Component declaration, so there are no hardcoded bean-name references. Ran a regex cross-check for any 'OrderCommonRuleService.' or 'OrderCommonRuleService var' patterns to be sure nothing is called on a typed reference. Reported self-call of supports() inside execute(), the inheritance relationship with OrderRuleService (override of execute, inherited supports, no super-calls), and the single framework dispatch site."
+}

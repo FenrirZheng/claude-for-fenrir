@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Identified the dynamic dispatch chain",
+      "passed": true,
+      "evidence": "Found same"
+    },
+    {
+      "text": "Noted absence of statically-typed call sites",
+      "passed": true,
+      "evidence": "Same observation"
+    },
+    {
+      "text": "Used MCP semantic tools (get_symbol_info / search_symbol) before falling back to text search",
+      "passed": false,
+      "evidence": "Started with Grep (failed), then went to MCP"
+    },
+    {
+      "text": "Identified subclass override behavior (OrderRuleService.execute does not call super)",
+      "passed": true,
+      "evidence": "Noted"
+    }
+  ]
+}

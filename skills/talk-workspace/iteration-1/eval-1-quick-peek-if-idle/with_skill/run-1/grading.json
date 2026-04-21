@@ -1,0 +1,33 @@
+{
+  "eval_id": 1,
+  "eval_name": "quick-peek-if-idle",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads",
+      "passed": true,
+      "evidence": "Step 1: `talk ping %99`. Reasoning explicitly cites SKILL.md: 'talk ping is the idle/busy probe'."
+    },
+    {
+      "text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown",
+      "passed": true,
+      "evidence": "Received exit code 2, correctly classified as 'unknown' (per SKILL.md's exit-code table), and declined to treat it as idle."
+    },
+    {
+      "text": "Respects the 'if and only if idle' gate — does NOT invoke `talk read` or equivalent when state is busy or unknown",
+      "passed": true,
+      "evidence": "Explicitly declined `talk read %99 50` because 'Exit 2 is not idle — it's unknown'. Final reply offered to read only if user explicitly confirms."
+    },
+    {
+      "text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)",
+      "passed": true,
+      "evidence": "No `talk send` / `talk type` / `tmux send-keys` issued. Only one read-only `talk ping` call."
+    }
+  ],
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 4,
+    "failed": 0,
+    "total": 4
+  }
+}

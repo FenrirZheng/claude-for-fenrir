@@ -1,0 +1,20 @@
+{
+  "scenario_id": "3",
+  "skill_version": "new",
+  "approach": "Shared-worktree: skip scrollback (no diff there) and use the commit hash worker already shared as the checkpoint — run `git show a1b2c3d` locally to see the exact diff, then after review send a decision back via `talk send`.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "git show a1b2c3d",
+      "purpose": "Fetch the worker's actual code change directly from the shared HEAD via the commit hash it already announced. Skill guidance for shared-worktree: use commit hashes as checkpoints instead of diffing a branch. Avoids pulling REPL noise / ANSI / spinners from scrollback into driver context, and the scrollback doesn't contain the diff anyway.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "talk send %42 \"Reviewed a1b2c3d — looks good, tests green on both branches. Hold off on push; I'll confirm after one more look.\"",
+      "purpose": "Transmit the decision (not reasoning) back to worker: acknowledge review, explicitly tell it NOT to push yet. Keeps worker idle but informed, per skill guidance to send actions/results only.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "Three alternatives considered and rejected: (a) `talk read %42 200` — scrollback explicitly doesn't carry the inline diff (only tool markers and chatter), so it would burn ~50 lines of permanent context for no new information; (b) `git diff HEAD~1` — equivalent result but less precise than naming the hash the worker already committed to, and leaves ambiguity if another commit lands; (c) polling with `until talk ping`— worker is already idle (title prefix ✳, announced completion), so a wait loop is pure overhead. The chosen path exploits the shared-worktree property the skill calls out explicitly: both panes see the same HEAD, so the commit hash IS the handoff artifact — zero scrollback tokens, fully sliceable, repeatable. Step 2 sends a short action-only reply so the worker doesn't sit idle wondering, and explicitly blocks the push the worker asked about."
+}

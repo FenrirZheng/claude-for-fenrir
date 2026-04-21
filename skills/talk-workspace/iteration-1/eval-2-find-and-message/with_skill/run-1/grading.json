@@ -1,0 +1,38 @@
+{
+  "eval_id": 2,
+  "eval_name": "find-and-message",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates",
+      "passed": true,
+      "evidence": "Step 1: `talk list` — enumerated 5 panes with pane_id / session / command / title."
+    },
+    {
+      "text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk",
+      "passed": true,
+      "evidence": "Step 2: `talk here` returned pane_id %14; report explicitly cites 'SKILL.md gotcha, sending to one's own pane creates a feedback loop'."
+    },
+    {
+      "text": "Uses `talk send` (atomic buffer paste) to deliver the message — avoids raw `tmux send-keys` which trips on quoting",
+      "passed": true,
+      "evidence": "Step 3: `talk send %99 \"please pause what you're doing and switch to branch review-fixes\"`. Note: the apostrophe in 'you're' is handled cleanly by talk's atomic buffer paste; compare baseline which hit a quoting bug."
+    },
+    {
+      "text": "Targets only %99 in the send command — does not send to any real pane",
+      "passed": true,
+      "evidence": "Only send call was to %99. Report notes: 'hard-coded to %99 as required, ignoring real candidates surfaced by talk list'."
+    },
+    {
+      "text": "Final reply confirms the target pane id (%99)",
+      "passed": true,
+      "evidence": "Final reply ends with 'Targeted pane: **%99**'."
+    }
+  ],
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  }
+}

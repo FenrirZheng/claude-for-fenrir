@@ -1,0 +1,22 @@
+Evaluating: Use whenever investigating or editing code in a JS/TS/Vue/React/Node project open in WebStorm — finding where a component is defined, who imports a hook, what implements an interface, where a config key or translation key is referenced, module-alias and re-export resolution, cross-file wiring (Next.js routes, Nuxt pages, Vue composables, Redux selectors), or any 'where is X used / how is X connected' question. The WebStorm MCP (`mcp__webstorm__*`) gives semantic, PSI/index-aware answers — it resolves TypeScript types, follows barrel re-exports, distinguishes real call sites from same-name string literals, resolves overloads, understands `tsconfig` path aliases, and doesn't silently skip `node_modules`/gitignored paths the way `rg` does. Use for write actions too — `rename_refactoring`, `replace_text_in_file`, `reformat_file`, `create_new_file` all apply edits live through the IDE so the user sees changes in their editor immediately. **Language-based routing:** WebStorm MCP for JS/TS/Vue/React/Node/frontend projects; IntelliJ MCP (`mcp__idea__*`, via the `intellij-code-reference` skill) for Java/Kotlin. Trigger broadly — any time you're about to `rg` through a WebStorm-indexed project, grep for a component/hook name, do a find-and-replace rename, or answer a 'where is X used' question, check what the MCP can answer first. Also use when the user mentions WebStorm, 'the IDE', IDE refactoring, PSI, tsconfig paths, or barrel exports.
+Results: 10/20 passed
+  [FAIL] rate=0/2 expected=True: rename getCompanyInfo to fetchCompanyInfo everywhere in camhr-pc — thi
+  [FAIL] rate=0/2 expected=True: in /home/fenrir/code/camhr/camhr-pc can you find every place the apply
+  [FAIL] rate=0/2 expected=True: hey where is the i18n key `page_login_btn_forgetPassword` referenced i
+  [FAIL] rate=0/2 expected=True: 我要在 camhr-pc 裡找 components/blocks/phone-password-login.vue 被哪些檔案 impor
+  [FAIL] rate=0/2 expected=True: in the next.js app at ~/projects/shop, which pages/components import `
+  [FAIL] rate=0/2 expected=True: can you find all callers of the userService.login function in my vue 2
+  [FAIL] rate=0/2 expected=True: my tsconfig has '@components' aliased to 'src/components' and i'm tryi
+  [FAIL] rate=0/2 expected=True: find where process.env.NEXT_PUBLIC_API_BASE_URL is read across /home/m
+  [FAIL] rate=0/2 expected=True: need to refactor a react hook — rename `useAuthContext` to `useAuth` a
+  [FAIL] rate=0/2 expected=True: quick question - what implements the `PaymentProvider` interface in my
+  [PASS] rate=0/2 expected=False: where is UserService.create called in my spring boot project /home/fen
+  [PASS] rate=0/2 expected=False: in my kotlin android project, find all usages of the `NetworkClient` c
+  [PASS] rate=0/2 expected=False: grep my /var/log/nginx folder for all 5xx errors from the last hour an
+  [PASS] rate=0/2 expected=False: commit my current changes in camhr-pc — i refactored the job-record co
+  [PASS] rate=0/2 expected=False: write a PRD for the new camhr payment flow — 3-step checkout, saved-ca
+  [PASS] rate=0/2 expected=False: build me a new react landing page with a hero section, 3 feature cards
+  [PASS] rate=0/2 expected=False: my `npm run dev` is failing with `Cannot find module './config/databas
+  [PASS] rate=0/2 expected=False: how do i add a permission to my .claude/settings.json to allow npm com
+  [PASS] rate=0/2 expected=False: my python script needs a virtualenv. project is ~/work/ml-pipeline and
+  [PASS] rate=0/2 expected=False: can you find all the places where the `User` model is used in this dja

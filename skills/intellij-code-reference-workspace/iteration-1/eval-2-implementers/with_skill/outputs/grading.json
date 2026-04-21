@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "Correct list of subclasses (>=2 of: OrderWorkflowAuditStrategy, OrderReturnWorkflowAuditStrategy, BillWorkflowAuditStrategy)",
+      "passed": true,
+      "evidence": "Found all 3"
+    },
+    {
+      "text": "Used MCP semantic tools (search_symbol/get_symbol_info) for implementer query",
+      "passed": true,
+      "evidence": "Direct to mcp__idea__search_symbol + get_symbol_info; no grep-first thrash"
+    },
+    {
+      "text": "Did not waste time on rg first for a semantic query",
+      "passed": true,
+      "evidence": "tool_log: no Grep call"
+    }
+  ]
+}

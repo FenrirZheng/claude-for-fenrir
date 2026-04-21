@@ -1,0 +1,26 @@
+{
+  "scenario_id": "1",
+  "skill_version": "old",
+  "approach": "Dispatch the review prompt to pane %42 via `talk send`, poll `talk ping` in a backgrounded until-loop so the foreground stays free, then capture the worker's final output with `talk read` once idle.",
+  "commands": [
+    {
+      "step": 1,
+      "cmd": "talk send %42 \"Review /home/fenrir/code/coinsasia/backend/backend-api-golang/internal/exchangeapi/auth/handlers.go and list the top 3 security risks. 3 short bullets is enough.\"",
+      "purpose": "Deliver the review task to the worker pane atomically (single paste + Enter) so it starts immediately.",
+      "run_in_background": false
+    },
+    {
+      "step": 2,
+      "cmd": "until talk ping %42 >/dev/null 2>&1; do sleep 3; done",
+      "purpose": "Wait for the worker's Claude Code title to flip from Braille-spinner (busy) back to the idle glyph, without blocking the foreground. Run in background so the notification fires the moment the loop exits (~60s).",
+      "run_in_background": true
+    },
+    {
+      "step": 3,
+      "cmd": "talk read %42 200",
+      "purpose": "Capture the tail of the worker's scrollback once idle. 200 lines comfortably covers the ~60-line noisy progress stream plus the final 3-bullet summary so the driver can surface the risks to the user.",
+      "run_in_background": false
+    }
+  ],
+  "rationale": "The old skill's canonical dispatch pattern is send -> ping-poll -> read. `talk tail` is explicitly forbidden (blocking TUI); a bare `talk read` before idle would race the still-streaming spinner output; asking the worker to write a handoff file would add a round-trip the scenario doesn't need since the final summary fits easily in a 200-line read window. Backgrounding the poll loop keeps the driver responsive and leverages the completion notification instead of sleep-then-check."
+}

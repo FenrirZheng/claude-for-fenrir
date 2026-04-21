@@ -1,0 +1,353 @@
+<!doctype html><html><head><meta charset="utf-8"><title>intellij-code-reference iteration-1</title>
+<style>
+body{font-family:-apple-system,Segoe UI,sans-serif;max-width:1400px;margin:20px auto;padding:0 20px;color:#222;line-height:1.5}
+h1{border-bottom:2px solid #333}
+.summary{background:#f5f5f5;padding:14px 18px;border-radius:6px;margin:14px 0}
+.summary table{border-collapse:collapse;width:100%}
+.summary td,.summary th{padding:6px 12px;text-align:left;border-bottom:1px solid #ddd}
+.summary th{background:#e0e0e0}
+.delta-pos{color:#0a0;font-weight:bold}
+.delta-neg{color:#a00;font-weight:bold}
+.eval{margin:30px 0;padding-top:20px;border-top:1px solid #ccc}
+.eval h2{margin-bottom:4px}
+.desc{color:#666;margin-top:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col{padding:14px;border-radius:6px;background:#fafafa}
+.col.with{border-left:4px solid #0a0}
+.col.without{border-left:4px solid #a00}
+.col h3{margin-top:0;font-size:14px}
+.assertions{padding-left:20px}
+.assertions li{margin:6px 0}
+details{margin-top:10px;background:#fff;padding:6px 10px;border-radius:4px;border:1px solid #ddd}
+summary{cursor:pointer;font-weight:600;font-size:13px}
+pre{white-space:pre-wrap;word-wrap:break-word;background:#f8f8f8;padding:8px;border-radius:4px;font-size:12px}
+</style></head><body>
+<h1>intellij-code-reference — iteration 1</h1>
+
+<div class="summary">
+  <h2>Summary</h2>
+  <table>
+    <tr><th>Metric</th><th>WITH SKILL (n=4)</th><th>BASELINE (n=4)</th><th>Δ</th></tr>
+    <tr><td>Pass rate (assertions)</td>
+        <td>100% ± 0%</td>
+        <td>48% ± 34%</td>
+        <td class="delta-pos">+52 pp</td></tr>
+    <tr><td>Wall time (s)</td>
+        <td>99s ± 22s</td>
+        <td>68s ± 41s</td>
+        <td class="delta-neg">+32s</td></tr>
+    <tr><td>Tokens</td>
+        <td>50,290 ± 8,537</td>
+        <td>35,993 ± 12,411</td>
+        <td class="delta-neg">+14,296</td></tr>
+  </table>
+  <p style="margin-top:14px"><b>Headline:</b> The skill drives a +52pp pass-rate improvement, almost entirely because baseline silently fails on eval-4 (claims a real Spring bean "doesn't exist"). Cost: ~32s and ~14k tokens overhead per query — partly skill-reading, partly more thorough exploration. Worst case the skill is slower-but-correct; best case it catches a critical false negative.</p>
+</div>
+
+
+    <section class="eval">
+      <h2>eval-1-definition-lookup</h2>
+      <p class="desc">Definition lookup (gtags-first preferred)</p>
+      <div class="grid">
+        <div class="col with">
+          <h3>WITH SKILL — 4/4 ✓ &nbsp; <small>121s · 41,239 tok · 9 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Correct file:line for OrderRuleService</b><br><small style="color:#666">OrderRuleService.java:26 (matches actual @Component class)</small></li><li>✅ <b>Tried gtags (global) before MCP for plain definition</b><br><small style="color:#666">tool_log shows global -x as first lookup tool after MCP probe; skill flow honored</small></li><li>✅ <b>Probed MCP availability before relying on it</b><br><small style="color:#666">mcp__idea__get_project_modules called first</small></li><li>✅ <b>Did not over-thrash (kept under 10 tool calls)</b><br><small style="color:#666">9 tool uses total</small></li></ul>
+          <details><summary>Approach</summary><pre>Followed the skill&#x27;s decision flow: probed MCP (available), but since this was a plain name-&gt;file:line definition lookup I reached for gtags (global -x) first per the flow and got an immediate hit, avoiding an MCP round-trip.</pre><b>Tools:</b><ol><li>Read(SKILL.md)</li><li>ToolSearch(select:mcp__idea__*)</li><li>mcp__idea__get_project_modules</li><li>Bash(global -x OrderRuleService)</li><li>Read(OrderRuleService.java)</li></ol></details>
+          <details><summary>Full answer</summary><pre>`we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderRuleService.java:26` — `@Component(&quot;OrderRuleService&quot;) public class OrderRuleService extends OrderCommonRuleService`: Spring-managed rule-engine service that evaluates order/lease pricing rules (e.g. low-price lease audit) by overriding `execute(Map&lt;String,Object&gt;)` and producing a `MatchResult`.
+
+Absolute path: `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderRuleService.java`
+</pre></details>
+        </div>
+        <div class="col without">
+          <h3>BASELINE — 2/4 ✗ &nbsp; <small>38s · 28,663 tok · 9 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Correct file:line for OrderRuleService</b><br><small style="color:#666">OrderRuleService.java:26</small></li><li>❌ <b>Tried gtags (global) before MCP for plain definition</b><br><small style="color:#666">Used Grep+fdfind, never tried global; rg failed silently first</small></li><li>❌ <b>Probed MCP availability before relying on it</b><br><small style="color:#666">Did not use MCP at all</small></li><li>✅ <b>Did not over-thrash (kept under 10 tool calls)</b><br><small style="color:#666">9 tool uses</small></li></ul>
+          <details><summary>Approach</summary><pre>Searched the repo with rg/fdfind for files named OrderRuleService, then Read the matching Java file to extract the class declaration line and write a summary.</pre><b>Tools:</b><ol><li>Grep</li><li>Bash(fdfind)</li><li>Read</li><li>Write</li></ol></details>
+          <details><summary>Full answer</summary><pre># OrderRuleService Definition
+
+- **File:Line:** `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderRuleService.java:26`
+- **Summary:** Spring `@Component(&quot;OrderRuleService&quot;)` that extends `OrderCommonRuleService` and implements an `execute(Map&lt;String,Object&gt;)` rule for auditing low-price lease order contracts by comparing the average lease term amount against product minimum prices.
+</pre></details>
+        </div>
+      </div>
+    </section>
+    <section class="eval">
+      <h2>eval-2-implementers</h2>
+      <p class="desc">Find implementers of an interface (semantic, MCP required)</p>
+      <div class="grid">
+        <div class="col with">
+          <h3>WITH SKILL — 3/3 ✓ &nbsp; <small>69s · 44,767 tok · 11 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Correct list of subclasses (&gt;=2 of: OrderWorkflowAuditStrategy, OrderReturnWorkflowAuditStrategy, BillWorkflowAuditStrategy)</b><br><small style="color:#666">Found all 3</small></li><li>✅ <b>Used MCP semantic tools (search_symbol/get_symbol_info) for implementer query</b><br><small style="color:#666">Direct to mcp__idea__search_symbol + get_symbol_info; no grep-first thrash</small></li><li>✅ <b>Did not waste time on rg first for a semantic query</b><br><small style="color:#666">tool_log: no Grep call</small></li></ul>
+          <details><summary>Approach</summary><pre>Followed intellij-code-reference SKILL.md decision flow: semantic &#x27;what implements/extends&#x27; question, so probed IntelliJ MCP via get_project_modules (succeeded), then search_symbol(&#x27;WorkflowAuditStrategy&#x27;) to locate the base class and candidate subclasses, cross-verified by search_regex for &#x27;extends\s+WorkflowAuditStrategy\b&#x27; across **/*.java. Both queries agreed on exactly 3 direct subclasses. No fallback to rg/tags was needed.</pre><b>Tools:</b><ol><li>Read(/home/fenrir/.claude/skills/intellij-code-reference/SKILL.md)</li><li>ToolSearch(select:mcp__idea__get_project_modules,mcp__idea__search_symbol,mcp__idea__get_symbol_info)</li><li>mcp__idea__get_project_modules</li><li>mcp__idea__search_symbol(q=WorkflowAuditStrategy)</li><li>mcp__idea__get_symbol_info(WorkflowAuditStrategy.java:12)</li><li>ToolSearch(select:mcp__idea__search_in_files_by_regex,mcp__idea__search_regex)</li><li>mcp__idea__search_regex(q=&#x27;extends\s+WorkflowAuditStrategy\b&#x27;, paths=[&#x27;**/*.java&#x27;])</li></ol></details>
+          <details><summary>Full answer</summary><pre># Classes extending `WorkflowAuditStrategy`
+
+Base class: `we.actuate.audit.strategy.WorkflowAuditStrategy`
+- `/home/fenrir/code/casa/we/we-starters/we-starter-security/src/main/java/we/actuate/audit/strategy/WorkflowAuditStrategy.java:12` — `public class WorkflowAuditStrategy implements AuditStrategy&lt;ResponseEntity&gt;`
+
+## Direct subclasses (3)
+
+1. **`BillWorkflowAuditStrategy`** (package `we.business.order.payment.service`)
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-billing/we-business-payment-service/src/main/java/we/business/order/payment/service/BillWorkflowAuditStrategy.java:32`
+   - Annotated `@Component(&quot;BillWorkflowAuditStrategy&quot;)`
+
+2. **`OrderReturnWorkflowAuditStrategy`** (package `we.business.order.audit`)
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderReturnWorkflowAuditStrategy.java:12`
+   - Note: file has `//todo 可能无法直接使用` and most logic is commented out.
+
+3. **`OrderWorkflowAuditStrategy`** (package `we.business.order.audit`)
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderWorkflowAuditStrategy.java:17`
+   - Registered as a `@Bean` in `OrderAuditAutoConfiguration` (same package).
+
+No further (transitive) subclasses found.
+
+## Method used
+IntelliJ MCP: `mcp__idea__search_symbol` then cross-checked with `mcp__idea__search_regex` for `extends\s+WorkflowAuditStrategy\b` across `**/*.java`. Both returned the same 3 direct subclasses.
+</pre></details>
+        </div>
+        <div class="col without">
+          <h3>BASELINE — 2/3 ✗ &nbsp; <small>44s · 31,415 tok · 8 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Correct list of subclasses</b><br><small style="color:#666">Found all 3</small></li><li>✅ <b>Used MCP semantic tools (search_symbol/get_symbol_info) for implementer query</b><br><small style="color:#666">Eventually used mcp__idea__search_symbol</small></li><li>❌ <b>Did not waste time on rg first for a semantic query</b><br><small style="color:#666">Initial Grep returned no matches; only fell back to MCP after that</small></li></ul>
+          <details><summary>Approach</summary><pre>Initial Grep for &#x27;extends WorkflowAuditStrategy&#x27; returned no matches (likely because the rg tool wasn&#x27;t indexing the same way IntelliJ does or scope mismatch). Loaded IntelliJ MCP tools via ToolSearch, then used mcp__idea__search_symbol to find the WorkflowAuditStrategy base class plus subclasses, and confirmed with mcp__idea__search_in_files_by_regex using the pattern &#x27;extends\s+WorkflowAuditStrategy&#x27; scoped to *.java. Found 3 direct subclasses: OrderWorkflowAuditStrategy, BillWorkflowAuditStrategy, and OrderReturnWorkflowAuditStrategy.</pre><b>Tools:</b><ol><li>Grep</li><li>ToolSearch</li><li>mcp__idea__search_symbol</li><li>mcp__idea__search_in_files_by_regex</li><li>Write</li></ol></details>
+          <details><summary>Full answer</summary><pre># Classes extending `WorkflowAuditStrategy`
+
+Base class:
+- `we.actuate.audit.strategy.WorkflowAuditStrategy` — `/home/fenrir/code/casa/we/we-starters/we-starter-security/src/main/java/we/actuate/audit/strategy/WorkflowAuditStrategy.java:9`
+
+Direct subclasses (3):
+
+1. `OrderWorkflowAuditStrategy`
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderWorkflowAuditStrategy.java:17`
+
+2. `BillWorkflowAuditStrategy`
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-billing/we-business-payment-service/src/main/java/we/business/order/payment/service/BillWorkflowAuditStrategy.java:32`
+
+3. `OrderReturnWorkflowAuditStrategy`
+   - `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderReturnWorkflowAuditStrategy.java:12`
+</pre></details>
+        </div>
+      </div>
+    </section>
+    <section class="eval">
+      <h2>eval-3-callers</h2>
+      <p class="desc">Find callers (overload disambiguation)</p>
+      <div class="grid">
+        <div class="col with">
+          <h3>WITH SKILL — 4/4 ✓ &nbsp; <small>101s · 57,708 tok · 18 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Identified the dynamic dispatch chain (DefaultRuleEngineService.getSimpleRuleService → applicationContext.getBean)</b><br><small style="color:#666">Found DefaultOrganizationAuditRuleService:111 + DefaultRuleEngineService:16</small></li><li>✅ <b>Noted absence of statically-typed call sites</b><br><small style="color:#666">Stated &#x27;no direct Java call sites&#x27;</small></li><li>✅ <b>Used MCP semantic tools (get_symbol_info / search_symbol) before falling back to text search</b><br><small style="color:#666">Tool log shows search_symbol → get_symbol_info before search_in_files</small></li><li>✅ <b>Identified subclass override behavior (OrderRuleService.execute does not call super)</b><br><small style="color:#666">Noted in answer</small></li></ul>
+          <details><summary>Approach</summary><pre>Probed IntelliJ MCP with get_project_modules (159 modules, confirmed available). Used search_symbol to locate OrderCommonRuleService (found single class at we-business-order-audit/.../OrderCommonRuleService.java:11, Spring @Component). Used get_symbol_info on the class, supports() and execute() — returned signatures/docs but not a usages list in this MCP build. Fell back to search_in_files_by_text for &#x27;OrderCommonRuleService&#x27; to enumerate references: found one subclass (OrderRuleService extends it) and only self-references/tags. Since the class is a @Component(&quot;OrderCommonRuleService&quot;) implementing SimpleRuleService, followed framework wiring: searched getSimpleRuleService to find the dispatch in DefaultRuleEngineService (getBean by name) and DefaultOrganizationAuditRuleService:109-111 (the lone invocation site keyed by DB-configured rule name). Confirmed the literal &quot;OrderCommonRuleService&quot; appears only at the @Component annotation, so there are no compile-time callers of execute/supports; runtime invocation is through Spring bean lookup driven by audit_organization_rules DB rows. The subclass OrderRuleService overrides execute without calling super and does not invoke supports.</pre><b>Tools:</b><ol><li>Read(SKILL.md)</li><li>ToolSearch(select:mcp__idea__get_project_modules,mcp__idea__search_symbol,mcp__idea__get_symbol_info)</li><li>mcp__idea__get_project_modules</li><li>mcp__idea__search_symbol(OrderCommonRuleService)</li><li>mcp__idea__get_symbol_info(class OrderCommonRuleService)</li><li>mcp__idea__get_symbol_info(supports)</li><li>mcp__idea__get_symbol_info(execute)</li><li>ToolSearch(select:mcp__idea__search_in_files_by_text,mcp__idea__search_in_files_by_regex,mcp__idea__find_files_by_name_keyword)</li><li>mcp__idea__search_in_files_by_text(OrderCommonRuleService)</li><li>mcp__idea__search_symbol(SimpleRuleService)</li><li>mcp__idea__search_in_files_by_text(getSimpleRuleService)</li><li>mcp__idea__search_in_files_by_regex(&quot;OrderCommonRuleService&quot;)</li><li>Read(OrderRuleService.java)</li><li>Read(DefaultRuleEngineService.java)</li><li>Read(DefaultOrganizationAuditRuleService.java)</li></ol></details>
+          <details><summary>Full answer</summary><pre># Callers of `OrderCommonRuleService`
+
+**Class:** `we.business.order.audit.OrderCommonRuleService`
+**Defined at:** `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderCommonRuleService.java:11`
+
+Registered as Spring bean via `@Component(&quot;OrderCommonRuleService&quot;)`. Implements `we.rule.engine.SimpleRuleService&lt;Map&lt;String, Object&gt;&gt;`.
+
+## Direct in-code invocations of `execute(...)` / `supports(...)`
+
+There are **no direct Java call sites** in the codebase that invoke `OrderCommonRuleService.execute(...)` or `OrderCommonRuleService.supports(...)` by receiver of type `OrderCommonRuleService`.
+
+- `supports(Map&lt;String, Object&gt;)` — called only from **within the class itself**:
+  - `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderCommonRuleService.java:27` — inside its own `execute(...)` method (`if (supports(parameters)) { ... }`).
+  - No external callers (not even the subclass `OrderRuleService`, which fully overrides `execute` and does not delegate to `supports`).
+
+- `execute(Map&lt;String, Object&gt;)` — no direct static/receiver-typed call sites to `OrderCommonRuleService#execute`. It is:
+  - Overridden by the subclass (see below), so the base implementation is effectively shadowed when `OrderRuleService` is the bean.
+  - Invoked dynamically through the Spring rule-engine framework (see &quot;Framework wiring&quot; below).
+
+## Subclass / override relationship
+
+- `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderRuleService.java:26` — `public class OrderRuleService extends OrderCommonRuleService` (own Spring bean `@Component(&quot;OrderRuleService&quot;)`).
+  - `OrderRuleService.java:33` — `@Override public MatchResult execute(Map&lt;String, Object&gt; parameters)` — overrides without calling `super.execute(...)`.
+  - `OrderRuleService` does **not** override `supports(...)` and does **not** call it either.
+
+## Framework wiring (how it actually gets invoked at runtime)
+
+`OrderCommonRuleService` is invoked only through Spring&#x27;s `ApplicationContext.getBean(name, SimpleRuleService.class)` — the bean name `&quot;OrderCommonRuleService&quot;` is looked up from a DB-configured rule row and dispatched. The single call chain that can reach `OrderCommonRuleService.execute(...)`:
+
+1. `/home/fenrir/code/casa/we/we-starters/we-starter-security/src/main/java/we/actuate/audit/rule/DefaultOrganizationAuditRuleService.java:109-111`
+   ```java
+   matchResult = ruleEngineService
+       .getSimpleRuleService(rule.getRules())
+       .execute(parameters);
+   ```
+   Here `rule.getRules()` supplies the Spring bean name. If the `audit_organization_rules` DB row has `rules = &quot;OrderCommonRuleService&quot;`, this resolves to the bean defined at `OrderCommonRuleService.java:11` and calls its `execute(...)`.
+
+2. `/home/fenrir/code/casa/we/we-starters/we-starter-rule-engine/src/main/java/we/rule/engine/DefaultRuleEngineService.java:16-18` — `getSimpleRuleService(String name)` returns `applicationContext.getBean(name, SimpleRuleService.class)` (generic bean-by-name lookup).
+
+No other `.getSimpleRuleService(...)` or `.execute(...)` site in the repo is parameterised with the string `&quot;OrderCommonRuleService&quot;`, and the string literal `&quot;OrderCommonRuleService&quot;` appears only once — at the `@Component` annotation itself (`OrderCommonRuleService.java:10`). So the only runtime entry point is the generic rule-engine dispatch above, keyed by DB content.
+
+## Summary
+
+| Method | Direct callers (file:line) |
+|---|---|
+| `OrderCommonRuleService.supports` | `OrderCommonRuleService.java:27` (self-call inside `execute`) — no external Java callers |
+| `OrderCommonRuleService.execute` | no direct Java call sites with `OrderCommonRuleService`-typed receiver; invoked dynamically via Spring bean lookup at `DefaultOrganizationAuditRuleService.java:109-111` when a DB `audit_organization_rules.rules` value equals `&quot;OrderCommonRuleService&quot;` |
+
+Not dead code, but not directly called either — this is a rule-engine plugin invoked by name through Spring. Renaming it safely requires updating both the `@Component` bean name and any `audit_organization_rules.rules` DB values that reference it.
+</pre></details>
+        </div>
+        <div class="col without">
+          <h3>BASELINE — 3/4 ✗ &nbsp; <small>127s · 54,527 tok · 23 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Identified the dynamic dispatch chain</b><br><small style="color:#666">Found same</small></li><li>✅ <b>Noted absence of statically-typed call sites</b><br><small style="color:#666">Same observation</small></li><li>❌ <b>Used MCP semantic tools (get_symbol_info / search_symbol) before falling back to text search</b><br><small style="color:#666">Started with Grep (failed), then went to MCP</small></li><li>✅ <b>Identified subclass override behavior (OrderRuleService.execute does not call super)</b><br><small style="color:#666">Noted</small></li></ul>
+          <details><summary>Approach</summary><pre>1) Located OrderCommonRuleService via IntelliJ filename index. 2) Read the class — Spring @Component with bean name &#x27;OrderCommonRuleService&#x27; implementing SimpleRuleService&lt;Map&lt;String,Object&gt;&gt;. 3) Identified that there is one subclass (OrderRuleService) that overrides execute without super and re-implements the supports logic inline. 4) Searched for SimpleRuleService usage and found the dispatcher pattern: RuleEngineService.getSimpleRuleService(name).execute(...) in DefaultOrganizationAuditRuleService at line 111, where &#x27;name&#x27; is a bean-name string from AuditRule config. 5) Confirmed the bean-name literal &#x27;OrderCommonRuleService&#x27; appears only on its @Component annotation, so invocation is purely dynamic through Spring lookup driven by AuditRule data. 6) For supports(): only one call site exists — internal self-call from OrderCommonRuleService.execute at line 27; no external callers. 7) Cross-verified via both ripgrep and IntelliJ text/symbol indexes.</pre><b>Tools:</b><ol><li>Bash (ls repo root)</li><li>Grep (ripgrep for OrderCommonRuleService — no matches because target dir excluded by global rg config)</li><li>mcp__idea__find_files_by_name_keyword (locate OrderCommonRuleService.java and SimpleRuleService.java)</li><li>Read (OrderCommonRuleService.java, OrderRuleService.java, SimpleRuleService.java, DefaultOrganizationAuditRuleService.java)</li><li>mcp__idea__search_in_files_by_text (OrderCommonRuleService, OrderRuleService, SimpleRuleService, getSimpleRuleService, &quot;OrderCommonRuleService&quot; literal, supports(parameters), .supports(parameters))</li><li>ToolSearch (load IntelliJ MCP tool schemas)</li><li>Write (final answer.md and tool_log.json)</li></ol></details>
+          <details><summary>Full answer</summary><pre># Callers of `OrderCommonRuleService` methods (`execute`, `supports`)
+
+## Class under analysis
+
+- `we.business.order.audit.OrderCommonRuleService`
+  - File: `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderCommonRuleService.java`
+  - Spring component, registered with bean name `&quot;OrderCommonRuleService&quot;` (line 10).
+  - Implements `we.rule.engine.SimpleRuleService&lt;Map&lt;String, Object&gt;&gt;`.
+  - Has one direct subclass: `we.business.order.audit.OrderRuleService` (`OrderRuleService.java:26`), which `@Override`s `execute(...)` (so the parent `execute` is **not** called via `super` from the subclass) but inherits `supports(...)`.
+
+There are **no direct/static call sites** in the codebase that reference `OrderCommonRuleService` as a typed receiver (no `someVar.execute(...)` or `someVar.supports(...)` where the static type is `OrderCommonRuleService`). All invocations are reached via either (a) interface-typed dispatch through `SimpleRuleService` after a Spring bean-name lookup, or (b) inheritance from the `OrderRuleService` subclass, or (c) an internal `this.supports(...)` call.
+
+---
+
+## `OrderCommonRuleService.execute(Map&lt;String, Object&gt;)`
+
+### 1. Dynamic Spring-bean dispatch (only external caller of the interface method)
+Looked up by bean name string and invoked through the `SimpleRuleService` interface:
+
+- `/home/fenrir/code/casa/we/we-starters/we-starter-security/src/main/java/we/actuate/audit/rule/DefaultOrganizationAuditRuleService.java:111`
+  ```java
+  matchResult = ruleEngineService
+      .getSimpleRuleService(rule.getRules())   // line 110 — bean name from AuditRule config
+      .execute(parameters);                    // line 111 — interface call
+  ```
+  The bean lookup itself is implemented in:
+  - `/home/fenrir/code/casa/we/we-starters/we-starter-rule-engine/src/main/java/we/rule/engine/DefaultRuleEngineService.java:16-17`
+    ```java
+    public SimpleRuleService getSimpleRuleService(String name) {
+      return applicationContext.getBean(name, SimpleRuleService.class);
+    }
+    ```
+  This call site reaches `OrderCommonRuleService.execute` whenever an `AuditRule.rules` configuration value resolves to the bean name `&quot;OrderCommonRuleService&quot;` (the only place that string literal is declared is on the `@Component` annotation at `OrderCommonRuleService.java:10`).
+
+### 2. No `super.execute(...)` from the subclass
+`OrderRuleService.execute` (`OrderRuleService.java:33-90`) overrides and **does not** call `super.execute(...)`, so the parent body is never reached through the subclass.
+
+---
+
+## `OrderCommonRuleService.supports(Map&lt;String, Object&gt;)`
+
+### 1. Internal self-call (within the class)
+- `/home/fenrir/code/casa/we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderCommonRuleService.java:27`
+  ```java
+  if (supports(parameters)) {
+      matchResult.setMatches(2);
+  }
+  ```
+  Called from `OrderCommonRuleService.execute` itself.
+
+### 2. No external callers
+A project-wide search (IntelliJ text index + ripgrep) found **zero** call sites of `.supports(parameters)` (or any `.supports(...)` form) outside the class itself. The `SimpleRuleService` interface only declares `execute(...)`; `supports(...)` is a public method added on the implementation but never referenced by any external code, including `OrderRuleService` (which simply re-implements the same gate logic inline at `OrderRuleService.java:40`).
+
+---
+
+## Summary table
+
+| Method | File:Line | Kind |
+|---|---|---|
+| `execute` | `we/we-starters/we-starter-security/src/main/java/we/actuate/audit/rule/DefaultOrganizationAuditRuleService.java:111` | Dynamic Spring bean lookup → interface call (reached when `AuditRule.rules == &quot;OrderCommonRuleService&quot;`) |
+| `supports` | `we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderCommonRuleService.java:27` | Internal self-call from `execute` |
+
+No other invocations exist in the monorepo.
+
+## Notes on methodology
+- Verified via both IntelliJ text/symbol index (`mcp__idea__search_in_files_by_text`, `find_files_by_name_keyword`) and ripgrep.
+- Because dispatch is by Spring bean name string (`@Component(&quot;OrderCommonRuleService&quot;)`), there is no statically-typed call site; the only way `execute` can run on this exact class is when the `AuditRule.rules` column / config feeds the literal `&quot;OrderCommonRuleService&quot;` into `RuleEngineService.getSimpleRuleService(...)`. That literal does not appear anywhere in the source other than the `@Component` declaration, so any actual runtime usage is driven by data (DB-stored audit rules).
+</pre></details>
+        </div>
+      </div>
+    </section>
+    <section class="eval">
+      <h2>eval-4-bean-name</h2>
+      <p class="desc">Spring bean by name (text-search; rg silently fails)</p>
+      <div class="grid">
+        <div class="col with">
+          <h3>WITH SKILL — 4/4 ✓ &nbsp; <small>107s · 57,444 tok · 16 tool calls</small></h3>
+          <ul class="assertions"><li>✅ <b>Found @Bean registration at OrderAuditAutoConfiguration.java:13</b><br><small style="color:#666">Reported correctly</small></li><li>✅ <b>Found the strategy registry pattern (AuditStrategyDispatch)</b><br><small style="color:#666">Reported AuditStrategyDispatch.java:30-32, :84, :89</small></li><li>✅ <b>Did NOT falsely conclude the bean doesn&#x27;t exist</b><br><small style="color:#666">Comprehensive accurate answer</small></li><li>✅ <b>Used MCP search_in_files_by_text instead of rg</b><br><small style="color:#666">tool_log shows mcp__idea__search_in_files_by_text repeatedly; no rg</small></li></ul>
+          <details><summary>Approach</summary><pre>Read the intellij-code-reference SKILL, loaded mcp__idea__* schemas via ToolSearch, probed IntelliJ MCP with get_project_modules (succeeded - 200+ modules indexed). Used search_symbol to locate the OrderWorkflowAuditStrategy class and found the @Bean factory method in OrderAuditAutoConfiguration.java. Ran case-sensitive text searches on both class name and bean name (lower-camel) to find all references. Searched via regex for @Qualifier/@Resource/getBean by-name patterns (none found). Discovered the bean is actually registered into a custom strategy registry (AuditStrategyDispatch) via getBeansOfType + getStrategyName(), not by Spring bean name; the &#x27;name&#x27; used to look it up is the string returned from getStrategyName() (&#x27;OrderWorkflowAuditStrategy&#x27;), referenced from a frontend JS file. Reported file:line for @Bean registration, class definition, strategy self-id, dispatch registry, runtime lookup, and client-side key use.</pre><b>Tools:</b><ol><li>Read(SKILL.md)</li><li>ToolSearch(select:mcp__idea__*)</li><li>mcp__idea__get_project_modules</li><li>mcp__idea__search_symbol(q=OrderWorkflowAuditStrategy)</li><li>Read(OrderAuditAutoConfiguration.java)</li><li>mcp__idea__get_symbol_info(OrderWorkflowAuditStrategy.java:17)</li><li>mcp__idea__search_in_files_by_text(orderWorkflowAuditStrategy, case-sensitive)</li><li>mcp__idea__search_in_files_by_text(OrderWorkflowAuditStrategy, case-sensitive)</li><li>mcp__idea__search_in_files_by_text(&quot;OrderWorkflowAuditStrategy&quot; string literal)</li><li>mcp__idea__search_in_files_by_regex(@Qualifier|@Resource|getBean)</li><li>mcp__idea__search_symbol(q=WorkflowAuditStrategy)</li><li>mcp__idea__search_in_files_by_regex(getStrategyName|strategyName)</li><li>Read(AuditStrategyDispatch.java)</li><li>Write(answer.md)</li><li>Write(tool_log.json)</li></ol></details>
+          <details><summary>Full answer</summary><pre># Spring Bean: `OrderWorkflowAuditStrategy`
+
+## Bean registration (@Bean method)
+
+- `we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderAuditAutoConfiguration.java:13` — `@Bean public OrderWorkflowAuditStrategy orderWorkflowAuditStrategy()` inside `@Configuration @ComponentScan` class `OrderAuditAutoConfiguration` (line 10). Bean name defaults to the method name: **`orderWorkflowAuditStrategy`**.
+
+## Class definition (no stereotype — bean exists only via the @Bean factory above)
+
+- `we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderWorkflowAuditStrategy.java:17` — `public class OrderWorkflowAuditStrategy extends WorkflowAuditStrategy`. The class itself has NO `@Component`/`@Service`/`@Repository`; it is registered solely through the `@Bean` factory method above.
+
+## Name-based lookup / injection
+
+No direct by-name injection was found in Java source:
+- No `@Qualifier(&quot;orderWorkflowAuditStrategy&quot;)`
+- No `@Resource(name = &quot;orderWorkflowAuditStrategy&quot;)`
+- No `getBean(&quot;orderWorkflowAuditStrategy&quot;)`
+- No `@Autowired` field of type `OrderWorkflowAuditStrategy`
+
+The bean is instead discovered and registered **by type + strategy name** via a strategy-pattern registry:
+
+- `we/we-starters/we-starter-security/src/main/java/we/actuate/audit/strategy/AuditStrategyDispatch.java:30-32` — `applicationContext.getBeansOfType(AuditStrategy.class)` iterates every `AuditStrategy` bean and stores each by `getStrategyName()`:
+  ```java
+  strategyMap.put(e.getValue().getStrategyName(), e.getValue())
+  ```
+- `OrderWorkflowAuditStrategy.java:23-25` — `getStrategyName()` returns the string `&quot;OrderWorkflowAuditStrategy&quot;`, which is the key used at runtime (not the Spring bean name).
+- Runtime dispatch: `AuditStrategyDispatch.java:84,89` — `getAuditStrategy(option.getStrategy())` resolves the strategy by that string key.
+
+### Frontend reference to the strategy key
+
+- `smart-park-admin/src/utils/request.js:98` — JS code references the literal `&#x27;OrderWorkflowAuditStrategy&#x27;` (paired with `&#x27;BillWorkflowAuditStrategy&#x27;`), presumably sent from the client and resolved server-side through `AuditStrategyDispatch.getAuditStrategy(...)`.
+
+## Summary
+
+| Role | Location |
+|---|---|
+| `@Bean` registration (bean name `orderWorkflowAuditStrategy`) | `we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderAuditAutoConfiguration.java:13` |
+| Class definition | `we-business-order-starter/we-business-order-audit/src/main/java/we/business/order/audit/OrderWorkflowAuditStrategy.java:17` |
+| Strategy-key self-identification | `.../OrderWorkflowAuditStrategy.java:24` (returns `&quot;OrderWorkflowAuditStrategy&quot;`) |
+| Runtime registry that indexes it by `getStrategyName()` | `we/we-starters/we-starter-security/src/main/java/we/actuate/audit/strategy/AuditStrategyDispatch.java:30-32` |
+| Runtime lookup by name | `AuditStrategyDispatch.java:84` and `:89` via `getAuditStrategy(option.getStrategy())` |
+| Client-side reference to the strategy key | `smart-park-admin/src/utils/request.js:98` |
+
+No Spring-level by-name lookups of `orderWorkflowAuditStrategy` exist. All consumption is polymorphic via `AuditStrategy`/`WorkflowAuditStrategy` + the dispatch map keyed by the `getStrategyName()` string.
+</pre></details>
+        </div>
+        <div class="col without">
+          <h3>BASELINE — 0/4 ✗ &nbsp; <small>61s · 29,368 tok · 13 tool calls</small></h3>
+          <ul class="assertions"><li>❌ <b>Found @Bean registration at OrderAuditAutoConfiguration.java:13</b><br><small style="color:#666">MISSED — said the bean doesn&#x27;t exist</small></li><li>❌ <b>Found the strategy registry pattern (AuditStrategyDispatch)</b><br><small style="color:#666">MISSED entirely</small></li><li>❌ <b>Did NOT falsely conclude the bean doesn&#x27;t exist</b><br><small style="color:#666">Falsely concluded &#x27;symbol does not exist in this repo&#x27;</small></li><li>❌ <b>Used MCP search_in_files_by_text instead of rg</b><br><small style="color:#666">Used 7 grep calls, never tried MCP</small></li></ul>
+          <details><summary>Approach</summary><pre>Without the IntelliJ MCP skill, I relied on ripgrep-based content searches across the entire /home/fenrir/code/casa Spring Boot monorepo. Searched progressively broader patterns (exact class name, then case-insensitive partial tokens like &#x27;OrderWorkflowAudit&#x27;, &#x27;WorkflowAuditStrategy&#x27;, &#x27;AuditStrategy&#x27;, &#x27;OrderWorkflow&#x27;, &#x27;WorkflowAudit&#x27;, and the camelCase bean-lookup form &#x27;orderWorkflowAudit&#x27;). All searches returned zero matches, so the bean is neither registered (no @Bean/@Component/@Service/@Configuration) nor referenced by name (no @Qualifier / getBean / @Resource) anywhere in source. Conclusion: the symbol does not exist in this repo on the current branch.</pre><b>Tools:</b><ol><li>{&#x27;tool&#x27;: &#x27;Bash&#x27;, &#x27;purpose&#x27;: &#x27;list top-level contents of /home/fenrir/code/casa to understand monorepo layout&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;OrderWorkflowAuditStrategy&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;OrderWorkflowAudit&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;WorkflowAuditStrategy&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;AuditStrategy&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;orderWorkflowAudit&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;OrderWorkflow&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Grep&#x27;, &#x27;pattern&#x27;: &#x27;WorkflowAudit&#x27;, &#x27;flags&#x27;: &#x27;-i&#x27;, &#x27;scope&#x27;: &#x27;/home/fenrir/code/casa&#x27;, &#x27;result&#x27;: &#x27;no matches&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Write&#x27;, &#x27;purpose&#x27;: &#x27;save answer.md&#x27;}</li><li>{&#x27;tool&#x27;: &#x27;Write&#x27;, &#x27;purpose&#x27;: &#x27;save tool_log.json&#x27;}</li></ol></details>
+          <details><summary>Full answer</summary><pre># Spring Bean: `OrderWorkflowAuditStrategy`
+
+## Result: Not Found
+
+The bean `OrderWorkflowAuditStrategy` does **not exist** anywhere in the `/home/fenrir/code/casa` monorepo.
+
+### Searches performed (all zero results)
+
+- `OrderWorkflowAuditStrategy` (exact, case-sensitive) — no matches
+- `OrderWorkflowAudit` (case-insensitive) — no matches
+- `WorkflowAuditStrategy` (case-insensitive) — no matches
+- `AuditStrategy` (case-insensitive) — no matches
+- `OrderWorkflow` (case-insensitive) — no matches
+- `WorkflowAudit` (case-insensitive) — no matches
+- `orderWorkflowAudit` (camelCase lookup name, case-insensitive) — no matches
+
+### Conclusion
+
+- **Registration site (`@Bean` / `@Component` / `@Service` / `@Configuration`):** none
+- **Injection / name-based lookup sites (`@Autowired`, `@Qualifier(&quot;orderWorkflowAuditStrategy&quot;)`, `getBean(&quot;orderWorkflowAuditStrategy&quot;)`, `@Resource(name=...)`):** none
+
+No class, no qualifier string, no `getBean(...)` call, and no configuration property references this bean name anywhere in the modules under `/home/fenrir/code/casa` (searched across all files: `all-casa-project`, `qxh-app`, `simple-pms`, `smart-park-admin`, `we`, `web-app`, `we-business-order-starter`, `we-business-starter-iot`, `we-business-starters`, `we-module-starter`).
+
+If you expected this bean to exist, check that:
+1. You are pointing at the correct repository/branch.
+2. The bean name is spelled correctly (there is no similarly-named bean such as `OrderAuditStrategy` or `WorkflowAuditHandler` either).
+3. It is not provided by an external JAR dependency rather than source in this monorepo (a dependency JAR would not show up via source search).
+</pre></details>
+        </div>
+      </div>
+    </section>
+
+<hr><p style="color:#888;font-size:12px">Generated from /home/fenrir/.claude/skills/intellij-code-reference-workspace/iteration-1</p>
+</body></html>

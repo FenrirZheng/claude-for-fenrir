@@ -1,0 +1,47 @@
+Right, I'll make the auth middleware accept a cookie-based session when the Authorization header is absent, and add tests for both branches.
+
+⠋ Reading file…
+✓ Read internal/exchangeapi/auth/middleware.go (112 lines)
+
+⠋ Reading file…
+✓ Read internal/exchangeapi/auth/middleware_test.go (78 lines)
+
+Let me check how sessionCookieName is defined and whether it's already wired up in the config.
+
+⠋ Reading file…
+✓ Read internal/exchangeapi/auth/session.go (34 lines)
+
+Good, sessionCookieName is already defined as a const — I can reference it directly.
+
+⠋ Editing file…
+✓ Edited internal/exchangeapi/auth/middleware.go — extracted token extraction, added cookie fallback branch
+
+Now let me add two new test cases: one for the cookie-fallback happy path, one for the "neither header nor cookie" 401 path.
+
+⠋ Editing file…
+✓ Edited internal/exchangeapi/auth/middleware_test.go — added TestRequireAuth_CookieFallback and TestRequireAuth_NoHeaderNoCookie
+
+Running the tests…
+
+⠋ go test ./internal/exchangeapi/auth/...
+⠙ go test ./internal/exchangeapi/auth/...
+⠹ go test ./internal/exchangeapi/auth/...
+✓ go test ./internal/exchangeapi/auth/... — 69 tests, 69 passed, 2.3s
+
+Running the full suite to make sure nothing else broke…
+
+⠋ go test ./...
+⠙ go test ./...
+⠹ go test ./...
+⠸ go test ./...
+✓ go test ./... — 881 tests, 881 passed, 4m 41s
+
+OK all green. Let me stage and commit.
+
+⠋ git add internal/exchangeapi/auth/middleware.go internal/exchangeapi/auth/middleware_test.go
+✓ staged 2 files
+
+⠋ git commit
+✓ committed as a1b2c3d — "feat(auth): accept cookie session when Authorization header missing"
+
+Done. The change is on HEAD (short hash a1b2c3d). Want me to push to origin, or do you want to review the diff first?

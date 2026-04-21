@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Output file written", "passed": true, "evidence": "answer.md written"},
+    {"text": "Found at least one caller file:line for user-creation service method", "passed": true, "evidence": "BgUserController.java:56; UserController.java:108; UserController.java:138 (callers of BgUserService.addBgUser and SeekerService.registerSeeker)"},
+    {"text": "(with_skill only) Explicitly recognized Java project and routed to IntelliJ MCP per skill's language-based routing rule", "passed": true, "evidence": "agent: 'The skill's Language-based routing table says Java → IntelliJ MCP (mcp__idea__*), not WebStorm MCP'"},
+    {"text": "(with_skill only) Did not incorrectly use mcp__webstorm__* on Java project", "passed": true, "evidence": "agent attempted mcp__idea__*, fell back to rg when Java project not open in IDE (correctly followed skill's pitfall guidance)"},
+    {"text": "file:line format", "passed": true, "evidence": "file:line format used"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only"}
+  ]
+}

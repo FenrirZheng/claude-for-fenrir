@@ -1,0 +1,5 @@
+{
+  "tools_used": ["Read", "Bash(global -x OrderRuleService)", "Write"],
+  "mcp_available": true,
+  "approach_summary": "Plain definition lookup per intellij-code-reference skill decision flow: tried gtags first (`global -x OrderRuleService`) which returned a single hit. Confirmed with Read of the file header. Did not need IntelliJ MCP since tags gave an unambiguous hit; MCP was available as fallback but unnecessary."
+}

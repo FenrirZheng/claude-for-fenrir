@@ -1,0 +1,313 @@
+{
+  "metadata": {
+    "skill_name": "talk",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-04-19T14:09:03Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 63.7,
+        "tokens": 31449,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)",
+          "passed": true,
+          "evidence": "Report lists step 1 as `talk send %99 \"Analyse the file /tmp/demo/auth.py \u2026\"` \u2014 the skill's atomic-paste primitive."
+        },
+        {
+          "text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle",
+          "passed": true,
+          "evidence": "Step 2: `until talk ping %99 >/dev/null 2>&1; do sleep 3; done` \u2014 canonical polling idiom from SKILL.md."
+        },
+        {
+          "text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked",
+          "passed": true,
+          "evidence": "`(run_in_background: true)` on the wait loop; reply explicitly tells user 'so your session stays free'."
+        },
+        {
+          "text": "Uses `talk read` after %99 goes idle to capture its final output",
+          "passed": true,
+          "evidence": "`talk read %99 200` chained after the ping loop exits."
+        },
+        {
+          "text": "Does NOT invoke `talk tail` (which would block the session indefinitely)",
+          "passed": true,
+          "evidence": "Explicitly called out in 'Notable decisions': 'Chose `read` over `tail`: the skill explicitly warns `tail` is a blocking TUI\u2026'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 36.7,
+        "tokens": 28524,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads",
+          "passed": true,
+          "evidence": "Step 1: `talk ping %99`. Reasoning explicitly cites SKILL.md: 'talk ping is the idle/busy probe'."
+        },
+        {
+          "text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown",
+          "passed": true,
+          "evidence": "Received exit code 2, correctly classified as 'unknown' (per SKILL.md's exit-code table), and declined to treat it as idle."
+        },
+        {
+          "text": "Respects the 'if and only if idle' gate \u2014 does NOT invoke `talk read` or equivalent when state is busy or unknown",
+          "passed": true,
+          "evidence": "Explicitly declined `talk read %99 50` because 'Exit 2 is not idle \u2014 it's unknown'. Final reply offered to read only if user explicitly confirms."
+        },
+        {
+          "text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)",
+          "passed": true,
+          "evidence": "No `talk send` / `talk type` / `tmux send-keys` issued. Only one read-only `talk ping` call."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 52.4,
+        "tokens": 29963,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates",
+          "passed": true,
+          "evidence": "Step 1: `talk list` \u2014 enumerated 5 panes with pane_id / session / command / title."
+        },
+        {
+          "text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk",
+          "passed": true,
+          "evidence": "Step 2: `talk here` returned pane_id %14; report explicitly cites 'SKILL.md gotcha, sending to one's own pane creates a feedback loop'."
+        },
+        {
+          "text": "Uses `talk send` (atomic buffer paste) to deliver the message \u2014 avoids raw `tmux send-keys` which trips on quoting",
+          "passed": true,
+          "evidence": "Step 3: `talk send %99 \"please pause what you're doing and switch to branch review-fixes\"`. Note: the apostrophe in 'you're' is handled cleanly by talk's atomic buffer paste; compare baseline which hit a quoting bug."
+        },
+        {
+          "text": "Targets only %99 in the send command \u2014 does not send to any real pane",
+          "passed": true,
+          "evidence": "Only send call was to %99. Report notes: 'hard-coded to %99 as required, ignoring real candidates surfaced by talk list'."
+        },
+        {
+          "text": "Final reply confirms the target pane id (%99)",
+          "passed": true,
+          "evidence": "Final reply ends with 'Targeted pane: **%99**'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 57.1,
+        "tokens": 28955,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Dispatches the task to %99 using `talk send` (not raw tmux send-keys, not a different mechanism)",
+          "passed": true,
+          "evidence": "Baseline initially tried raw `tmux send-keys`, then discovered+loaded the `talk` skill mid-run and retried with `talk send %99 \"\u2026\"`. Leakage noted \u2014 baseline effectively became a with-skill run."
+        },
+        {
+          "text": "Uses `talk ping` in a polling loop to detect when %99 becomes idle",
+          "passed": true,
+          "evidence": "Step 4 after skill leakage: `until talk ping %99 >/dev/null 2>&1; do sleep 3; done`."
+        },
+        {
+          "text": "Structures the wait as non-blocking (run_in_background, &, or explicit 'you can keep working' handoff) so the current session isn't blocked",
+          "passed": true,
+          "evidence": "`run_in_background: true` on the wait chain."
+        },
+        {
+          "text": "Uses `talk read` after %99 goes idle to capture its final output",
+          "passed": true,
+          "evidence": "Chained `talk read %99 200` after the ping loop."
+        },
+        {
+          "text": "Does NOT invoke `talk tail` (which would block the session indefinitely)",
+          "passed": true,
+          "evidence": "No `talk tail` call in the command list."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 54.2,
+        "tokens": 26824,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses `talk ping` (the purpose-built idle/busy probe) as the first check, rather than manual title parsing or blind reads",
+          "passed": false,
+          "evidence": "Baseline used raw `tmux display-message -p -t %99 '#{pane_current_command} #{pane_pid}'` \u2014 a generic pane query, not the purpose-built idle/busy probe. Missed the pane_title glyph signal that `talk ping` reads."
+        },
+        {
+          "text": "Correctly interprets ping's exit code to decide idle vs. busy vs. unknown",
+          "passed": false,
+          "evidence": "No ping was run, so no exit-code interpretation occurred. The baseline's heuristic (two capture-pane snapshots over time) is weaker and was not actually executed."
+        },
+        {
+          "text": "Respects the 'if and only if idle' gate \u2014 does NOT invoke `talk read` or equivalent when state is busy or unknown",
+          "passed": true,
+          "evidence": "Baseline did not attempt a `capture-pane -S -50` dump since the pane didn't exist; held back appropriately. The gate was respected, albeit incidentally."
+        },
+        {
+          "text": "Does NOT send any keystrokes to %99 while checking state (no interruption risk)",
+          "passed": true,
+          "evidence": "Only used read-only tmux probes (`display-message`, `list-panes`, `capture-pane`). No `send-keys`."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 64.0,
+        "tokens": 27427,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses `talk list` (or equivalent pane enumeration like `tmux list-panes -a`) to discover candidates",
+          "passed": true,
+          "evidence": "Step 2: `tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{pane_id} #{pane_current_command} #{pane_title} #{pane_current_path}'`."
+        },
+        {
+          "text": "Explicitly identifies own pane (`talk here` / `$TMUX_PANE` / equivalent) or acknowledges the self-send feedback-loop risk",
+          "passed": true,
+          "evidence": "Step 3: `tmux display-message -p '#{pane_id}'` \u2192 `%14`, report states 'identify myself so I don't self-message'."
+        },
+        {
+          "text": "Uses `talk send` (atomic buffer paste) to deliver the message \u2014 avoids raw `tmux send-keys` which trips on quoting",
+          "passed": false,
+          "evidence": "Used `tmux send-keys -t %99 'please pause what you'\\''re doing...' Enter` \u2014 and the report explicitly notes 'message got mangled by nested quotes'. Had to retry with `-l` flag. Exactly the pitfall `talk send`'s buffer-paste approach is designed to avoid."
+        },
+        {
+          "text": "Targets only %99 in the send command \u2014 does not send to any real pane",
+          "passed": true,
+          "evidence": "Both send-keys calls targeted %99 only."
+        },
+        {
+          "text": "Final reply confirms the target pane id (%99)",
+          "passed": true,
+          "evidence": "Final reply: 'Target picked for this test: **%99** (synthetic).'"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 50.9333,
+        "stddev": 13.5596,
+        "min": 36.7,
+        "max": 63.7
+      },
+      "tokens": {
+        "mean": 29978.6667,
+        "stddev": 1462.5629,
+        "min": 28524,
+        "max": 31449
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7667,
+        "stddev": 0.2517,
+        "min": 0.5,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 58.4333,
+        "stddev": 5.0342,
+        "min": 54.2,
+        "max": 64.0
+      },
+      "tokens": {
+        "mean": 27735.3333,
+        "stddev": 1098.45,
+        "min": 26824,
+        "max": 28955
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.23",
+      "time_seconds": "-7.5",
+      "tokens": "+2243"
+    }
+  },
+  "notes": []
+}

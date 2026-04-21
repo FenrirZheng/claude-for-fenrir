@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Output file written", "passed": true, "evidence": "answer.md written"},
+    {"text": "Named a specific i18n key containing 'login' with locale file citation", "passed": true, "evidence": "page_login_btn_forgetPassword from locales/en.json:496"},
+    {"text": "Found at least one call-site reference", "passed": true, "evidence": "components/blocks/phone-password-login.vue:67"},
+    {"text": "file:line format", "passed": true, "evidence": "explicit file:line"},
+    {"text": "(with_skill only) Used mcp__webstorm__search_in_files_by_text per skill guidance", "passed": true, "evidence": "agent cited this tool explicitly"},
+    {"text": "Did not modify any files", "passed": true, "evidence": "read-only"}
+  ]
+}
